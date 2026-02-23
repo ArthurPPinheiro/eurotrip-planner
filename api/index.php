@@ -29,3 +29,6 @@ $response = $kernel->handle($request);
 $response->send();
 
 $kernel->terminate($request, $response);
+
+$_SERVER["HTTPS"] = "on";
+$_SERVER["SERVER_PORT"] = 443;

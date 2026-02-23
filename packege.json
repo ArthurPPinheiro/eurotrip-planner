@@ -1,0 +1,5 @@
+{
+  "scripts": {
+    "build": "php -r \"copy('https://getcomposer.org/installer', 'composer-setup.php');\" && php composer-setup.php && php composer.phar install --no-dev --optimize-autoloader"
+  }
+}

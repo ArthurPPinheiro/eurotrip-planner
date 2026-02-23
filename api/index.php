@@ -1,10 +1,13 @@
 <?php
 
-$app = require_once __DIR__ . "/../bootstrap/app.php";
+$root = __DIR__ . "/..";
+
+require_once $root . "/vendor/autoload.php";
+
+$app = require_once $root . "/bootstrap/app.php";
 
 $app->useStoragePath("/tmp/storage");
 
-// Create required directories in /tmp
 $dirs = [
     "/tmp/storage/framework/views",
     "/tmp/storage/framework/cache",

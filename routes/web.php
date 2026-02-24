@@ -9,7 +9,6 @@ use App\Http\Controllers\DocumentController;
 use Illuminate\Support\Facades\Route;
 
 // Auth
-Route::get("/", fn() => redirect()->route("login"))->name("home");
 Route::get("/register", [AuthController::class, "showRegister"])->name(
     "register",
 );
@@ -20,6 +19,8 @@ Route::post("/logout", [AuthController::class, "logout"])->name("logout");
 
 // Protected
 Route::middleware("auth")->group(function () {
+    Route::get("/", [TripController::class, "index"])->name("trips.home");
+
     // Trips
     Route::get("/trips", [TripController::class, "index"])->name("trips.index");
     Route::get("/trips/create", [TripController::class, "create"])->name(

@@ -36,6 +36,9 @@
                         <p style="color:var(--gold-light);font-size:0.8rem">
                             {{ $trip->start_date->format('M d') }} — {{ $trip->end_date?->format('M d, Y') ?? '?' }}
                         </p>
+                        <p style="color:var(--cream);font-size:0.8rem">
+                            ⏰ In {{ $trip->getTimeUntilTrip() }} Days
+                        </p>
                     @endif
                 </div>
                 <div style="padding:1.25rem">

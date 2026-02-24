@@ -36,6 +36,9 @@
                             <?php echo e($trip->start_date->format('M d')); ?> — <?php echo e($trip->end_date?->format('M d, Y') ?? '?'); ?>
 
                         </p>
+                        <p style="color:var(--cream);font-size:0.8rem">
+                            ⏰ In <?php echo e($trip->getTimeUntilTrip()); ?> Days
+                        </p>
                     <?php endif; ?>
                 </div>
                 <div style="padding:1.25rem">

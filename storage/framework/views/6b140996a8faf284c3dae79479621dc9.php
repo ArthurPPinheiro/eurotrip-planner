@@ -11,6 +11,8 @@
                 <?php if($trip->start_date): ?><span>📅 <?php echo e($trip->start_date->format('M d')); ?> – <?php echo e($trip->end_date?->format('M d, Y') ?? '?'); ?></span><?php endif; ?>
                 <span>🗓️ <?php echo e($trip->days->count()); ?> days planned</span>
                 <span>👥 <?php echo e($trip->members->count()); ?> travellers</span>
+                <span>⏰ In <?php echo e($trip->getTimeUntilTrip()); ?> days</span>
+
             </div>
         </div>
         <div class="flex gap-1" style="align-items:flex-start">

@@ -12,6 +12,8 @@
                 @if($trip->start_date)<span>📅 {{ $trip->start_date->format('M d') }} – {{ $trip->end_date?->format('M d, Y') ?? '?' }}</span>@endif
                 <span>🗓️ {{ $trip->days->count() }} days planned</span>
                 <span>👥 {{ $trip->members->count() }} travellers</span>
+                <span>⏰ In {{ $trip->getTimeUntilTrip() }} days</span>
+
             </div>
         </div>
         <div class="flex gap-1" style="align-items:flex-start">

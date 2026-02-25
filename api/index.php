@@ -2,6 +2,10 @@
 
 $root = __DIR__ . "/..";
 
+// Tell Laravel the request is HTTPS before it captures the request
+$_SERVER["HTTPS"] = "on";
+$_SERVER["SERVER_PORT"] = 443;
+
 require_once $root . "/vendor/autoload.php";
 
 $app = require_once $root . "/bootstrap/app.php";
@@ -29,6 +33,3 @@ $response = $kernel->handle($request);
 $response->send();
 
 $kernel->terminate($request, $response);
-
-$_SERVER["HTTPS"] = "on";
-$_SERVER["SERVER_PORT"] = 443;

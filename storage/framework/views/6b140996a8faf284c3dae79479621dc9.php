@@ -84,8 +84,14 @@
 /* Route feature */
 .route-card { border: 1.5px solid var(--cream); border-radius: 10px; padding: 1rem; margin-bottom: 1rem; background: #fafafa; }
 .route-summary-bar { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 0.6rem; }
-.route-map { height: 260px; border-radius: 8px; overflow: hidden; border: 1px solid var(--cream); isolation: isolate; }
-.route-map-preview { height: 200px; border-radius: 8px; overflow: hidden; border: 1px solid var(--cream); margin-bottom: 0.5rem; isolation: isolate; }
+.route-map { height: 260px; border-radius: 8px; overflow: hidden; border: none; box-shadow: 0 2px 12px rgba(26,26,46,0.1); isolation: isolate; }
+.route-map-preview { height: 200px; border-radius: 8px; overflow: hidden; border: none; box-shadow: 0 2px 8px rgba(26,26,46,0.08); margin-bottom: 0.5rem; isolation: isolate; }
+/* Leaflet control styling */
+.leaflet-control-zoom a { font-family: 'DM Sans', sans-serif; font-size: 0.9rem; color: var(--ink) !important; border-color: var(--cream) !important; }
+.leaflet-control-zoom a:hover { background: var(--cream) !important; }
+.leaflet-control-attribution { font-size: 0.65rem !important; background: rgba(255,255,255,0.75) !important; }
+.leaflet-popup-content-wrapper { border-radius: 8px !important; box-shadow: 0 4px 16px rgba(26,26,46,0.12) !important; font-family: 'DM Sans', sans-serif !important; font-size: 0.85rem !important; }
+.leaflet-popup-tip { display: none !important; }
 .transport-btn { padding: 0.4rem 0.875rem; border-radius: 20px; border: 1.5px solid var(--cream); background: white; cursor: pointer; font-family: inherit; font-size: 0.85rem; transition: all 0.2s; }
 .transport-btn.active { background: var(--ink); color: white; border-color: var(--ink); }
 .transport-btn:hover:not(.active) { border-color: var(--gold); }
@@ -685,9 +691,10 @@ function initPreviewMap(dayId) {
     const mapEl = document.getElementById(`route-preview-${dayId}`);
     if (!mapEl) return null;
     if (leafletMaps[`preview-${dayId}`]) return leafletMaps[`preview-${dayId}`];
-    const map = L.map(mapEl).setView([48.8566, 2.3522], 5);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    const map = L.map(mapEl, { scrollWheelZoom: false }).setView([48.8566, 2.3522], 5);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        attribution: '© <a href="https://www.openstreetmap.org/copyright">OSM</a> © <a href="https://carto.com">CARTO</a>',
+        subdomains: 'abcd', maxZoom: 20
     }).addTo(map);
     leafletMaps[`preview-${dayId}`] = map;
     return map;
@@ -701,8 +708,8 @@ function addStopMarkers(map, stops) {
     stops.forEach((s, i) => {
         L.marker([s.lat, s.lng], {
             icon: L.divIcon({
-                html: `<div style="background:#1a1a2e;color:white;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.4)">${i+1}</div>`,
-                className: '', iconSize: [24,24], iconAnchor: [12,12]
+                html: `<div style="background:#1a1a2e;color:white;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;border:2.5px solid white;box-shadow:0 2px 8px rgba(26,26,46,0.35);font-family:'DM Sans',sans-serif">${i+1}</div>`,
+                className: '', iconSize: [26,26], iconAnchor: [13,13]
             })
         }).addTo(map).bindPopup(s.city);
     });
@@ -715,9 +722,9 @@ function updatePreviewMap(dayId) {
     if (!map) return;
     clearMapLayers(map);
     const latlngs = stops.map(s => [s.lat, s.lng]);
-    L.polyline(latlngs, { color: '#1a1a2e', weight: 2, dashArray: '5,5' }).addTo(map);
+    L.polyline(latlngs, { color: '#1a1a2e', weight: 2.5, dashArray: '6,5', opacity: 0.7 }).addTo(map);
     addStopMarkers(map, stops);
-    map.fitBounds(L.latLngBounds(latlngs), { padding: [20, 20] });
+    map.fitBounds(L.latLngBounds(latlngs), { padding: [28, 28] });
 }
 
 async function calculateRoute(dayId) {
@@ -739,7 +746,7 @@ async function calculateRoute(dayId) {
                 durationMin = route.duration / 60;
                 const map = initPreviewMap(dayId);
                 clearMapLayers(map);
-                const geojsonLayer = L.geoJSON(route.geometry, { style: { color: '#1a1a2e', weight: 3 } }).addTo(map);
+                const geojsonLayer = L.geoJSON(route.geometry, { style: { color: '#1a1a2e', weight: 3.5, opacity: 0.85 } }).addTo(map);
                 addStopMarkers(map, stops);
                 map.fitBounds(geojsonLayer.getBounds(), { padding: [20, 20] });
             } else {
@@ -812,9 +819,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const dayId = mapEl.dataset.dayId;
         if (stops.length < 2) return;
 
-        const map = L.map(mapEl).setView([stops[0].latitude, stops[0].longitude], 6);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        const map = L.map(mapEl, { scrollWheelZoom: false }).setView([stops[0].latitude, stops[0].longitude], 6);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            attribution: '© <a href="https://www.openstreetmap.org/copyright">OSM</a> © <a href="https://carto.com">CARTO</a>',
+            subdomains: 'abcd', maxZoom: 20
         }).addTo(map);
 
         const latlngs = stops.map(s => [s.latitude, s.longitude]);
@@ -826,22 +834,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 .then(r => r.json())
                 .then(data => {
                     if (data.code === 'Ok' && data.routes.length > 0) {
-                        L.geoJSON(data.routes[0].geometry, { style: { color: '#1a1a2e', weight: 3 } }).addTo(map);
+                        L.geoJSON(data.routes[0].geometry, { style: { color: '#1a1a2e', weight: 3.5, opacity: 0.85 } }).addTo(map);
                     } else {
-                        L.polyline(latlngs, { color: '#1a1a2e', weight: 2, dashArray: '5,5' }).addTo(map);
+                        L.polyline(latlngs, { color: '#1a1a2e', weight: 2.5, dashArray: '6,5', opacity: 0.7 }).addTo(map);
                     }
                     addStopMarkers(map, mappedStops);
-                    map.fitBounds(L.latLngBounds(latlngs), { padding: [20, 20] });
+                    map.fitBounds(L.latLngBounds(latlngs), { padding: [28, 28] });
                 })
                 .catch(() => {
-                    L.polyline(latlngs, { color: '#1a1a2e', weight: 2, dashArray: '5,5' }).addTo(map);
+                    L.polyline(latlngs, { color: '#1a1a2e', weight: 2.5, dashArray: '6,5', opacity: 0.7 }).addTo(map);
                     addStopMarkers(map, mappedStops);
-                    map.fitBounds(L.latLngBounds(latlngs), { padding: [20, 20] });
+                    map.fitBounds(L.latLngBounds(latlngs), { padding: [28, 28] });
                 });
         } else {
-            L.polyline(latlngs, { color: '#1a1a2e', weight: 2, dashArray: '5,5' }).addTo(map);
+            L.polyline(latlngs, { color: '#1a1a2e', weight: 2.5, dashArray: '6,5', opacity: 0.7 }).addTo(map);
             addStopMarkers(map, mappedStops);
-            map.fitBounds(L.latLngBounds(latlngs), { padding: [20, 20] });
+            map.fitBounds(L.latLngBounds(latlngs), { padding: [28, 28] });
         }
 
         leafletMaps[`display-${dayId}`] = map;

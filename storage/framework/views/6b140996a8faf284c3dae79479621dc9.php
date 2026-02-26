@@ -1,53 +1,52 @@
-@extends('layouts.app')
-@section('title', $trip->name)
-@section('content')
+<?php $__env->startSection('title', $trip->name); ?>
+<?php $__env->startSection('content'); ?>
 
 <div style="background:linear-gradient(135deg,var(--ink),#2d2d4e);border-radius:16px;padding:2rem 2.5rem;margin-bottom:2rem;position:relative;overflow:hidden;color:white">
     <div style="position:absolute;right:-10px;top:50%;transform:translateY(-50%);font-size:8rem;opacity:0.06">✈</div>
     <div class="flex-between">
         <div>
-            <h1 style="font-family:'Playfair Display',serif;font-size:2rem;margin-bottom:0.4rem">{{ $trip->name }}</h1>
-            @if($trip->description)<p style="opacity:0.7;font-size:0.9rem">{{ $trip->description }}</p>@endif
+            <h1 style="font-family:'Playfair Display',serif;font-size:2rem;margin-bottom:0.4rem"><?php echo e($trip->name); ?></h1>
+            <?php if($trip->description): ?><p style="opacity:0.7;font-size:0.9rem"><?php echo e($trip->description); ?></p><?php endif; ?>
             <div class="flex gap-2 mt-2" style="font-size:0.85rem;opacity:0.8;flex-wrap:wrap">
-                @if($trip->start_date)<span>📅 {{ $trip->start_date->format('M d') }} – {{ $trip->end_date?->format('M d, Y') ?? '?' }}</span>@endif
-                <span>🗓️ {{ $trip->days->count() }} days planned</span>
-                <span>👥 {{ $trip->members->count() }} travellers</span>
-                <span>⏰ In {{ $trip->getTimeUntilTrip() }} days</span>
+                <?php if($trip->start_date): ?><span>📅 <?php echo e($trip->start_date->format('M d')); ?> – <?php echo e($trip->end_date?->format('M d, Y') ?? '?'); ?></span><?php endif; ?>
+                <span>🗓️ <?php echo e($trip->days->count()); ?> days planned</span>
+                <span>👥 <?php echo e($trip->members->count()); ?> travellers</span>
+                <span>⏰ In <?php echo e($trip->getTimeUntilTrip()); ?> days</span>
 
             </div>
         </div>
         <div class="flex gap-1" style="align-items:flex-start">
-            <a href="{{ route('trips.edit', $trip) }}" class="btn btn-sm" style="background:rgba(255,255,255,0.15);color:white;border:1px solid rgba(255,255,255,0.25)">✏️ Edit</a>
-            <a href="{{ route('trips.index') }}" class="btn btn-sm btn-ghost" style="color:rgba(255,255,255,0.6)">← Back</a>
+            <a href="<?php echo e(route('trips.edit', $trip)); ?>" class="btn btn-sm" style="background:rgba(255,255,255,0.15);color:white;border:1px solid rgba(255,255,255,0.25)">✏️ Edit</a>
+            <a href="<?php echo e(route('trips.index')); ?>" class="btn btn-sm btn-ghost" style="color:rgba(255,255,255,0.6)">← Back</a>
         </div>
     </div>
     <div class="flex-between mt-3" style="align-items:center">
         <div class="flex gap-1">
-            @foreach($trip->members as $m)
-                <div class="avatar" title="{{ $m->name }}" style="background:{{ $m->avatar_color }};width:30px;height:30px;font-size:0.65rem;border:2px solid rgba(255,255,255,0.3)">{{ $m->initials() }}</div>
-            @endforeach
+            <?php $__currentLoopData = $trip->members; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $m): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                <div class="avatar" title="<?php echo e($m->name); ?>" style="background:<?php echo e($m->avatar_color); ?>;width:30px;height:30px;font-size:0.65rem;border:2px solid rgba(255,255,255,0.3)"><?php echo e($m->initials()); ?></div>
+            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
         </div>
         <div style="background:rgba(255,255,255,0.1);border-radius:8px;padding:0.4rem 0.875rem;font-size:0.8rem;color:rgba(255,255,255,0.8)">
-            Invite code: <strong style="letter-spacing:0.1em;color:var(--gold-light)">{{ $trip->invite_code }}</strong>
+            Invite code: <strong style="letter-spacing:0.1em;color:var(--gold-light)"><?php echo e($trip->invite_code); ?></strong>
         </div>
     </div>
 </div>
 
 <!-- Tabs -->
 <div class="flex gap-1 mb-3">
-    <a href="{{ route('trips.show', $trip) }}" class="btn btn-primary btn-sm">🗺️ Itinerary</a>
-    <a href="{{ route('documents.index', $trip) }}" class="btn btn-outline btn-sm">📂 Documents</a>
+    <a href="<?php echo e(route('trips.show', $trip)); ?>" class="btn btn-primary btn-sm">🗺️ Itinerary</a>
+    <a href="<?php echo e(route('documents.index', $trip)); ?>" class="btn btn-outline btn-sm">📂 Documents</a>
 
     <!-- Add Day -->
-    <form method="POST" action="{{ route('trips.addDay', $trip) }}">
-        @csrf
+    <form method="POST" action="<?php echo e(route('trips.addDay', $trip)); ?>">
+        <?php echo csrf_field(); ?>
         <button type="submit" class="btn btn-gold">+ Add Day</button>
     </form>
 </div>
 
 
 
-@push('styles')
+<?php $__env->startPush('styles'); ?>
 <style>
 .accordion-day { border-radius: 12px; overflow: hidden; box-shadow: var(--shadow); margin-bottom: 0.75rem; }
 .accordion-trigger {
@@ -92,68 +91,69 @@
 .transport-btn:hover:not(.active) { border-color: var(--gold); }
 .stop-row { background: white; border: 1px solid var(--cream); border-radius: 8px; padding: 0.5rem 0.75rem; }
 </style>
-@endpush
+<?php $__env->stopPush(); ?>
 
 <!-- Days -->
-@if($trip->days->isEmpty())
+<?php if($trip->days->isEmpty()): ?>
     <div class="card">
         <div class="empty-state">
             <span class="emoji">🗓️</span>
             <p>No days yet — click "Add Day" to start building your itinerary!</p>
         </div>
     </div>
-@else
+<?php else: ?>
     <div style="display:flex;flex-direction:column;gap:0.75rem">
-        @foreach($trip->days as $day)
+        <?php $__currentLoopData = $trip->days; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $day): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
         <div class="accordion-day">
 
-            {{-- Accordion Trigger --}}
-            <span class="accordion-trigger {{ $loop->first ? 'open' : '' }}" onclick="toggleAccordion({{ $day->id }})">
+            
+            <span class="accordion-trigger <?php echo e($loop->first ? 'open' : ''); ?>" onclick="toggleAccordion(<?php echo e($day->id); ?>)">
                 <div style="flex:1;min-width:0">
                     <div style="font-family:'Playfair Display',serif;font-size:1.05rem;margin-bottom:0.25rem">
-                        Day {{ $day->day_number }}
-                        @if($day->title) — {{ $day->title }}@endif
+                        Day <?php echo e($day->day_number); ?>
+
+                        <?php if($day->title): ?> — <?php echo e($day->title); ?><?php endif; ?>
                     </div>
                     <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap">
-                        <span style="font-size:0.78rem;opacity:0.65">{{ $day->date->format('l, M d, Y') }}</span>
-                        @if($day->destinations->count())
+                        <span style="font-size:0.78rem;opacity:0.65"><?php echo e($day->date->format('l, M d, Y')); ?></span>
+                        <?php if($day->destinations->count()): ?>
                             <div class="day-summary-pills">
-                                @foreach($day->destinations as $d)
-                                    <span class="day-pill">{{ $d->emoji }} {{ $d->city }}</span>
-                                @endforeach
+                                <?php $__currentLoopData = $day->destinations; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $d): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                    <span class="day-pill"><?php echo e($d->emoji); ?> <?php echo e($d->city); ?></span>
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                             </div>
-                        @else
+                        <?php else: ?>
                             <span style="font-size:0.78rem;opacity:0.45;font-style:italic">No cities yet</span>
-                        @endif
+                        <?php endif; ?>
                     </div>
                 </div>
                 <div style="display:flex;align-items:center;gap:0.75rem;flex-shrink:0">
-                    @if($day->route?->total_distance_km)
+                    <?php if($day->route?->total_distance_km): ?>
                         <span style="font-size:0.75rem;background:rgba(255,255,255,0.15);border-radius:20px;padding:0.15rem 0.55rem;white-space:nowrap">
-                            {{ ['car'=>'🚗','bus'=>'🚌','train'=>'🚂'][$day->route->transport_mode] ?? '🗺️' }} {{ number_format($day->route->total_distance_km, 1) }} km
+                            <?php echo e(['car'=>'🚗','bus'=>'🚌','train'=>'🚂'][$day->route->transport_mode] ?? '🗺️'); ?> <?php echo e(number_format($day->route->total_distance_km, 1)); ?> km
                         </span>
-                    @endif
-                    @if($day->destinations->flatMap->activities->count())
-                        <span style="font-size:0.75rem;opacity:0.6">{{ $day->destinations->flatMap->activities->count() }} items</span>
-                    @endif
-                    <form method="POST" action="{{ route('days.destroy', $day) }}"
-                          onsubmit="event.stopPropagation(); return confirm('Delete Day {{ $day->day_number }} and all its cities?')"
+                    <?php endif; ?>
+                    <?php if($day->destinations->flatMap->activities->count()): ?>
+                        <span style="font-size:0.75rem;opacity:0.6"><?php echo e($day->destinations->flatMap->activities->count()); ?> items</span>
+                    <?php endif; ?>
+                    <form method="POST" action="<?php echo e(route('days.destroy', $day)); ?>"
+                          onsubmit="event.stopPropagation(); return confirm('Delete Day <?php echo e($day->day_number); ?> and all its cities?')"
                           onclick="event.stopPropagation()"
                           class="day-delete-form">
-                        @csrf @method('DELETE')
+                        <?php echo csrf_field(); ?> <?php echo method_field('DELETE'); ?>
                         <button type="submit" title="Delete day" class="day-delete-btn">✕</button>
                     </form>
                     <span class="accordion-chevron">▼</span>
                 </div>
             </span>
 
-            {{-- Accordion Body --}}
-            <div id="accordion-body-{{ $day->id }}" class="accordion-body {{ $loop->first ? 'open' : '' }}">
+            
+            <div id="accordion-body-<?php echo e($day->id); ?>" class="accordion-body <?php echo e($loop->first ? 'open' : ''); ?>">
                 <div class="accordion-inner">
 
-                    {{-- Route Section --}}
-                    @if($day->route)
-                        @php
+                    
+                    <?php if($day->route): ?>
+                        <?php
                             $routeStops = $day->route->stops->map(fn($s) => [
                                 'city' => $s->city, 'country' => $s->country,
                                 'latitude' => (float)$s->latitude, 'longitude' => (float)$s->longitude
@@ -162,120 +162,120 @@
                             $rm = ($day->route->total_duration_minutes ?? 0) % 60;
                             $modeIcon = ['car'=>'🚗','bus'=>'🚌','train'=>'🚂'][$day->route->transport_mode] ?? '🚗';
                             $modeLabel = ['car'=>'Car','bus'=>'Bus','train'=>'Train'][$day->route->transport_mode] ?? 'Car';
-                        @endphp
+                        ?>
                         <div class="route-card">
                             <div class="route-summary-bar">
-                                <span style="font-weight:600">{{ $modeIcon }} {{ $modeLabel }}</span>
-                                @if($day->route->total_distance_km)
-                                    <span class="badge badge-blue">📏 {{ number_format($day->route->total_distance_km, 1) }} km</span>
-                                @endif
-                                @if($day->route->total_duration_minutes)
-                                    <span class="badge badge-gold">⏱ {{ $rh > 0 ? $rh.'h '.$rm.'min' : $rm.'min' }}</span>
-                                @endif
+                                <span style="font-weight:600"><?php echo e($modeIcon); ?> <?php echo e($modeLabel); ?></span>
+                                <?php if($day->route->total_distance_km): ?>
+                                    <span class="badge badge-blue">📏 <?php echo e(number_format($day->route->total_distance_km, 1)); ?> km</span>
+                                <?php endif; ?>
+                                <?php if($day->route->total_duration_minutes): ?>
+                                    <span class="badge badge-gold">⏱ <?php echo e($rh > 0 ? $rh.'h '.$rm.'min' : $rm.'min'); ?></span>
+                                <?php endif; ?>
                             </div>
                             <div style="display:flex;align-items:center;gap:0.3rem;flex-wrap:wrap;margin-bottom:0.75rem;font-size:0.85rem;color:var(--muted)">
-                                @foreach($day->route->stops as $stop)
-                                    @if(!$loop->first)<span style="opacity:0.5">→</span>@endif
-                                    <span>{{ $stop->city }}</span>
-                                @endforeach
+                                <?php $__currentLoopData = $day->route->stops; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $stop): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                    <?php if(!$loop->first): ?><span style="opacity:0.5">→</span><?php endif; ?>
+                                    <span><?php echo e($stop->city); ?></span>
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                             </div>
                             <div class="route-map"
-                                 id="route-map-{{ $day->id }}"
-                                 data-day-id="{{ $day->id }}"
-                                 data-stops="{{ json_encode($routeStops) }}"
-                                 data-mode="{{ $day->route->transport_mode }}"></div>
+                                 id="route-map-<?php echo e($day->id); ?>"
+                                 data-day-id="<?php echo e($day->id); ?>"
+                                 data-stops="<?php echo e(json_encode($routeStops)); ?>"
+                                 data-mode="<?php echo e($day->route->transport_mode); ?>"></div>
                             <div class="flex gap-1" style="margin-top:0.75rem">
                                 <button
-                                    data-day="{{ $day->id }}"
-                                    data-stops="{{ json_encode($routeStops) }}"
-                                    data-mode="{{ $day->route->transport_mode }}"
+                                    data-day="<?php echo e($day->id); ?>"
+                                    data-stops="<?php echo e(json_encode($routeStops)); ?>"
+                                    data-mode="<?php echo e($day->route->transport_mode); ?>"
                                     onclick="openRouteModalFromEl(this)"
                                     class="btn btn-sm btn-outline">✏️ Edit Route</button>
-                                <form method="POST" action="{{ route('routes.destroy', $day->route) }}" onsubmit="return confirm('Remove this route?')">
-                                    @csrf @method('DELETE')
+                                <form method="POST" action="<?php echo e(route('routes.destroy', $day->route)); ?>" onsubmit="return confirm('Remove this route?')">
+                                    <?php echo csrf_field(); ?> <?php echo method_field('DELETE'); ?>
                                     <button class="btn btn-sm btn-ghost" style="color:var(--danger)">✕ Remove Route</button>
                                 </form>
                             </div>
                         </div>
-                    @else
+                    <?php else: ?>
                         <div style="margin-bottom:1rem">
                             <button
-                                data-day="{{ $day->id }}"
+                                data-day="<?php echo e($day->id); ?>"
                                 onclick="openRouteModalFromEl(this)"
                                 class="btn btn-sm btn-outline">🗺️ Add Route</button>
                         </div>
-                    @endif
+                    <?php endif; ?>
 
-                    {{-- Add City button --}}
+                    
                     <div style="display:flex;justify-content:flex-end;margin-bottom:1rem">
-                        <button onclick="openModal('dest-modal-{{ $day->id }}')" class="btn btn-sm btn-gold">+ Add City</button>
+                        <button onclick="openModal('dest-modal-<?php echo e($day->id); ?>')" class="btn btn-sm btn-gold">+ Add City</button>
                     </div>
 
-                    @if($day->destinations->isEmpty())
+                    <?php if($day->destinations->isEmpty()): ?>
                         <div style="text-align:center;padding:1.5rem 0;color:var(--muted);font-size:0.9rem">
                             No cities added yet for this day.
                         </div>
-                    @else
+                    <?php else: ?>
                         <div style="display:flex;flex-direction:column;gap:1rem">
-                            @foreach($day->destinations as $dest)
+                            <?php $__currentLoopData = $day->destinations; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $dest): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                             <div style="border:1.5px solid var(--cream);border-radius:10px;overflow:hidden">
                                 <div style="background:var(--cream);padding:0.75rem 1.25rem;display:flex;align-items:center;justify-content:space-between;gap:1rem">
                                     <div class="flex gap-1" style="align-items:center">
-                                        <span style="font-size:1.8rem">{{ $dest->emoji }}</span>
+                                        <span style="font-size:1.8rem"><?php echo e($dest->emoji); ?></span>
                                         <div>
-                                            <div style="font-weight:600;font-size:1rem">{{ $dest->city }}</div>
-                                            <div class="text-sm text-muted">{{ $dest->country }}</div>
+                                            <div style="font-weight:600;font-size:1rem"><?php echo e($dest->city); ?></div>
+                                            <div class="text-sm text-muted"><?php echo e($dest->country); ?></div>
                                         </div>
                                     </div>
                                     <div class="flex gap-1">
-                                        <button onclick="openModal('act-modal-{{ $dest->id }}')" class="btn btn-sm btn-primary">+ Add Item</button>
-                                        <form method="POST" action="{{ route('destinations.destroy', $dest) }}" onsubmit="return confirm('Remove {{ $dest->city }}?')">
-                                            @csrf @method('DELETE')
+                                        <button onclick="openModal('act-modal-<?php echo e($dest->id); ?>')" class="btn btn-sm btn-primary">+ Add Item</button>
+                                        <form method="POST" action="<?php echo e(route('destinations.destroy', $dest)); ?>" onsubmit="return confirm('Remove <?php echo e($dest->city); ?>?')">
+                                            <?php echo csrf_field(); ?> <?php echo method_field('DELETE'); ?>
                                             <button class="btn btn-sm btn-ghost" style="color:var(--danger)">✕</button>
                                         </form>
                                     </div>
                                 </div>
 
-                                @if($dest->activities->count())
+                                <?php if($dest->activities->count()): ?>
                                 <div style="padding:0.75rem 1.25rem;display:flex;flex-direction:column;gap:0.25rem">
-                                    @foreach($dest->activities as $act)
+                                    <?php $__currentLoopData = $dest->activities; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $act): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                     <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;padding:0.6rem 0;border-bottom:1px solid var(--cream)">
                                         <div class="flex gap-1" style="align-items:flex-start;flex:1">
-                                            <span style="font-size:1.1rem;flex-shrink:0;margin-top:2px">{{ $act->typeIcon() }}</span>
+                                            <span style="font-size:1.1rem;flex-shrink:0;margin-top:2px"><?php echo e($act->typeIcon()); ?></span>
                                             <div style="flex:1">
-                                                <div style="font-weight:500;font-size:0.9rem">{{ $act->title }}</div>
-                                                @if($act->description)<div class="text-sm text-muted">{{ $act->description }}</div>@endif
+                                                <div style="font-weight:500;font-size:0.9rem"><?php echo e($act->title); ?></div>
+                                                <?php if($act->description): ?><div class="text-sm text-muted"><?php echo e($act->description); ?></div><?php endif; ?>
                                                 <div class="flex gap-1 mt-1" style="flex-wrap:wrap;align-items:center">
-                                                    @if($act->time)<span class="badge badge-blue">🕐 {{ $act->time }}</span>@endif
-                                                    @if($act->address)<span class="text-sm text-muted">📍 {{ $act->address }}</span>@endif
-                                                    @if($act->price)<span class="badge badge-green">{{ $act->currency }} {{ number_format($act->price, 2) }}</span>@endif
-                                                    @if($act->link)<a href="{{ $act->link }}" target="_blank" class="text-sm" style="color:var(--accent)">🔗 Link</a>@endif
+                                                    <?php if($act->time): ?><span class="badge badge-blue">🕐 <?php echo e($act->time); ?></span><?php endif; ?>
+                                                    <?php if($act->address): ?><span class="text-sm text-muted">📍 <?php echo e($act->address); ?></span><?php endif; ?>
+                                                    <?php if($act->price): ?><span class="badge badge-green"><?php echo e($act->currency); ?> <?php echo e(number_format($act->price, 2)); ?></span><?php endif; ?>
+                                                    <?php if($act->link): ?><a href="<?php echo e($act->link); ?>" target="_blank" class="text-sm" style="color:var(--accent)">🔗 Link</a><?php endif; ?>
                                                 </div>
-                                                <div class="text-sm text-muted mt-1">Added by {{ $act->author->name }}</div>
+                                                <div class="text-sm text-muted mt-1">Added by <?php echo e($act->author->name); ?></div>
                                             </div>
                                         </div>
-                                        <form method="POST" action="{{ route('activities.destroy', $act) }}" onsubmit="return confirm('Remove this?')">
-                                            @csrf @method('DELETE')
+                                        <form method="POST" action="<?php echo e(route('activities.destroy', $act)); ?>" onsubmit="return confirm('Remove this?')">
+                                            <?php echo csrf_field(); ?> <?php echo method_field('DELETE'); ?>
                                             <button class="btn btn-sm btn-ghost" style="color:var(--danger);padding:0.2rem 0.5rem">✕</button>
                                         </form>
                                     </div>
-                                    @endforeach
+                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                 </div>
-                                @else
+                                <?php else: ?>
                                     <div style="padding:0.875rem 1.25rem;font-size:0.85rem;color:var(--muted);font-style:italic">No items yet — add a hotel, POI, or note.</div>
-                                @endif
+                                <?php endif; ?>
                             </div>
 
-                            {{-- Activity Modal --}}
-                            <div id="act-modal-{{ $dest->id }}" class="modal-backdrop">
+                            
+                            <div id="act-modal-<?php echo e($dest->id); ?>" class="modal-backdrop">
                                 <div class="modal">
                                     <div class="modal-header">
-                                        <h3>Add to {{ $dest->city }}</h3>
-                                        <button class="modal-close" onclick="closeModal('act-modal-{{ $dest->id }}')">×</button>
+                                        <h3>Add to <?php echo e($dest->city); ?></h3>
+                                        <button class="modal-close" onclick="closeModal('act-modal-<?php echo e($dest->id); ?>')">×</button>
                                     </div>
                                     <div class="modal-body">
-                                        <form method="POST" action="{{ route('activities.store', $dest) }}">
-                                            @csrf
+                                        <form method="POST" action="<?php echo e(route('activities.store', $dest)); ?>">
+                                            <?php echo csrf_field(); ?>
                                             <div class="form-group">
                                                 <label class="form-label">Type</label>
                                                 <select name="type" class="form-control" required>
@@ -313,30 +313,30 @@
                                             </div>
                                             <input type="hidden" name="currency" value="EUR">
                                             <div class="flex gap-1">
-                                                <button type="button" onclick="closeModal('act-modal-{{ $dest->id }}')" class="btn btn-outline">Cancel</button>
+                                                <button type="button" onclick="closeModal('act-modal-<?php echo e($dest->id); ?>')" class="btn btn-outline">Cancel</button>
                                                 <button type="submit" class="btn btn-primary">Add Item</button>
                                             </div>
                                         </form>
                                     </div>
                                 </div>
                             </div>
-                            @endforeach
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                         </div>
-                    @endif
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
 
-        {{-- Add Destination Modal --}}
-        <div id="dest-modal-{{ $day->id }}" class="modal-backdrop">
+        
+        <div id="dest-modal-<?php echo e($day->id); ?>" class="modal-backdrop">
             <div class="modal">
                 <div class="modal-header">
-                    <h3>Add City — Day {{ $day->day_number }}</h3>
-                    <button class="modal-close" onclick="closeModal('dest-modal-{{ $day->id }}')">×</button>
+                    <h3>Add City — Day <?php echo e($day->day_number); ?></h3>
+                    <button class="modal-close" onclick="closeModal('dest-modal-<?php echo e($day->id); ?>')">×</button>
                 </div>
                 <div class="modal-body">
-                    <form method="POST" action="{{ route('destinations.store', $day) }}">
-                        @csrf
+                    <form method="POST" action="<?php echo e(route('destinations.store', $day)); ?>">
+                        <?php echo csrf_field(); ?>
                         <div class="grid-2">
                             <div class="form-group">
                                 <label class="form-label">City *</label>
@@ -352,7 +352,7 @@
                             <input type="text" name="emoji" class="form-control" placeholder="🇫🇷" style="font-size:1.4rem;width:80px;text-align:center">
                         </div>
                         <div class="flex gap-1">
-                            <button type="button" onclick="closeModal('dest-modal-{{ $day->id }}')" class="btn btn-outline">Cancel</button>
+                            <button type="button" onclick="closeModal('dest-modal-<?php echo e($day->id); ?>')" class="btn btn-outline">Cancel</button>
                             <button type="submit" class="btn btn-primary">Add City</button>
                         </div>
                     </form>
@@ -360,55 +360,55 @@
             </div>
         </div>
 
-        {{-- Route Modal --}}
-        <div id="route-modal-{{ $day->id }}" class="modal-backdrop">
+        
+        <div id="route-modal-<?php echo e($day->id); ?>" class="modal-backdrop">
             <div class="modal" style="max-width:640px">
                 <div class="modal-header">
-                    <h3>Route — Day {{ $day->day_number }}</h3>
-                    <button class="modal-close" onclick="closeModal('route-modal-{{ $day->id }}')">×</button>
+                    <h3>Route — Day <?php echo e($day->day_number); ?></h3>
+                    <button class="modal-close" onclick="closeModal('route-modal-<?php echo e($day->id); ?>')">×</button>
                 </div>
                 <div class="modal-body">
                     <form method="POST"
-                          id="route-form-{{ $day->id }}"
-                          action="{{ $day->route ? route('routes.update', $day->route) : route('routes.store', $day) }}">
-                        @csrf
-                        @if($day->route) @method('PUT') @endif
+                          id="route-form-<?php echo e($day->id); ?>"
+                          action="<?php echo e($day->route ? route('routes.update', $day->route) : route('routes.store', $day)); ?>">
+                        <?php echo csrf_field(); ?>
+                        <?php if($day->route): ?> <?php echo method_field('PUT'); ?> <?php endif; ?>
 
-                        {{-- Transport mode --}}
+                        
                         <div class="form-group">
                             <label class="form-label">Transport Mode</label>
                             <div class="flex gap-1" style="flex-wrap:wrap">
                                 <button type="button" class="transport-btn" data-mode="car"
-                                        onclick="setTransport({{ $day->id }}, 'car')">🚗 Car</button>
+                                        onclick="setTransport(<?php echo e($day->id); ?>, 'car')">🚗 Car</button>
                                 <button type="button" class="transport-btn" data-mode="bus"
-                                        onclick="setTransport({{ $day->id }}, 'bus')">🚌 Bus</button>
+                                        onclick="setTransport(<?php echo e($day->id); ?>, 'bus')">🚌 Bus</button>
                                 <button type="button" class="transport-btn" data-mode="train"
-                                        onclick="setTransport({{ $day->id }}, 'train')">🚂 Train</button>
+                                        onclick="setTransport(<?php echo e($day->id); ?>, 'train')">🚂 Train</button>
                             </div>
-                            <input type="hidden" name="transport_mode" id="transport-input-{{ $day->id }}" value="car">
+                            <input type="hidden" name="transport_mode" id="transport-input-<?php echo e($day->id); ?>" value="car">
                         </div>
 
-                        {{-- Stops --}}
+                        
                         <div class="form-group">
                             <label class="form-label">Stops <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:0.8rem">(min 2 — type city then click away to geocode)</span></label>
-                            <div id="stops-list-{{ $day->id }}" style="display:flex;flex-direction:column;gap:0.5rem"></div>
-                            <button type="button" onclick="addStop({{ $day->id }})" class="btn btn-sm btn-ghost" style="margin-top:0.5rem">+ Add Stop</button>
+                            <div id="stops-list-<?php echo e($day->id); ?>" style="display:flex;flex-direction:column;gap:0.5rem"></div>
+                            <button type="button" onclick="addStop(<?php echo e($day->id); ?>)" class="btn btn-sm btn-ghost" style="margin-top:0.5rem">+ Add Stop</button>
                         </div>
 
-                        {{-- Map preview --}}
+                        
                         <div class="form-group">
-                            <div id="route-preview-{{ $day->id }}" class="route-map-preview"></div>
+                            <div id="route-preview-<?php echo e($day->id); ?>" class="route-map-preview"></div>
                             <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap">
-                                <button type="button" onclick="calculateRoute({{ $day->id }})" class="btn btn-sm btn-outline">🔄 Calculate Route</button>
-                                <span id="route-calc-summary-{{ $day->id }}" style="font-size:0.85rem;color:var(--muted)"></span>
+                                <button type="button" onclick="calculateRoute(<?php echo e($day->id); ?>)" class="btn btn-sm btn-outline">🔄 Calculate Route</button>
+                                <span id="route-calc-summary-<?php echo e($day->id); ?>" style="font-size:0.85rem;color:var(--muted)"></span>
                             </div>
                         </div>
 
-                        <input type="hidden" name="total_distance_km" id="total-distance-{{ $day->id }}">
-                        <input type="hidden" name="total_duration_minutes" id="total-duration-{{ $day->id }}">
+                        <input type="hidden" name="total_distance_km" id="total-distance-<?php echo e($day->id); ?>">
+                        <input type="hidden" name="total_duration_minutes" id="total-duration-<?php echo e($day->id); ?>">
 
                         <div class="flex gap-1">
-                            <button type="button" onclick="closeModal('route-modal-{{ $day->id }}')" class="btn btn-outline">Cancel</button>
+                            <button type="button" onclick="closeModal('route-modal-<?php echo e($day->id); ?>')" class="btn btn-outline">Cancel</button>
                             <button type="submit" class="btn btn-primary">Save Route</button>
                         </div>
                     </form>
@@ -416,27 +416,27 @@
             </div>
         </div>
 
-        @endforeach
+        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
     </div>
 
-    {{-- Trip totals --}}
-    @php
+    
+    <?php
         $totalKm = $trip->days->sum(fn($d) => $d->route?->total_distance_km ?? 0);
         $totalMin = $trip->days->sum(fn($d) => $d->route?->total_duration_minutes ?? 0);
-    @endphp
-    @if($totalKm > 0)
+    ?>
+    <?php if($totalKm > 0): ?>
         <div style="margin-top:0.5rem;padding:0.875rem 1.25rem;background:white;border-radius:12px;box-shadow:var(--shadow);display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap">
             <span style="font-size:0.85rem;color:var(--muted);font-weight:500">Trip totals</span>
-            <span class="badge badge-blue" style="font-size:0.85rem;padding:0.3rem 0.75rem">📏 {{ number_format($totalKm, 1) }} km total</span>
-            @if($totalMin > 0)
-                @php $th = intdiv($totalMin, 60); $tm = $totalMin % 60; @endphp
-                <span class="badge badge-gold" style="font-size:0.85rem;padding:0.3rem 0.75rem">⏱ {{ $th > 0 ? $th.'h '.$tm.'min' : $tm.'min' }} driving</span>
-            @endif
+            <span class="badge badge-blue" style="font-size:0.85rem;padding:0.3rem 0.75rem">📏 <?php echo e(number_format($totalKm, 1)); ?> km total</span>
+            <?php if($totalMin > 0): ?>
+                <?php $th = intdiv($totalMin, 60); $tm = $totalMin % 60; ?>
+                <span class="badge badge-gold" style="font-size:0.85rem;padding:0.3rem 0.75rem">⏱ <?php echo e($th > 0 ? $th.'h '.$tm.'min' : $tm.'min'); ?> driving</span>
+            <?php endif; ?>
         </div>
-    @endif
-@endif
+    <?php endif; ?>
+<?php endif; ?>
 
-@push('scripts')
+<?php $__env->startPush('scripts'); ?>
 <script>
 function toggleAccordion(dayId) {
     const trigger = document.querySelector(`[onclick="toggleAccordion(${dayId})"]`);
@@ -720,5 +720,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
-@endpush
-@endsection
+<?php $__env->stopPush(); ?>
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH /Users/arthurpinheiro/Documents/repos/eurotrip/resources/views/trips/show.blade.php ENDPATH**/ ?>

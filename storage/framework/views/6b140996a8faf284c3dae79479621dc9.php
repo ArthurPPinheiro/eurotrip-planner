@@ -90,6 +90,21 @@
 .transport-btn.active { background: var(--ink); color: white; border-color: var(--ink); }
 .transport-btn:hover:not(.active) { border-color: var(--gold); }
 .stop-row { background: white; border: 1px solid var(--cream); border-radius: 8px; padding: 0.5rem 0.75rem; }
+/* Flight feature */
+.flight-card { border: 1.5px solid #dbeafe; border-radius: 10px; overflow: hidden; margin-bottom: 0.75rem; background: white; }
+.flight-card-header { background: linear-gradient(90deg, #1e3a5f, #1e40af); color: white; padding: 0.75rem 1.25rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.flight-route { display: flex; align-items: center; gap: 1rem; padding: 1rem 1.25rem; border-bottom: 1px solid #eff6ff; }
+.flight-airport-block { text-align: center; min-width: 70px; }
+.flight-airport-code { font-size: 1.6rem; font-weight: 700; color: var(--ink); letter-spacing: 0.05em; line-height: 1; }
+.flight-airport-city { font-size: 0.72rem; color: var(--muted); margin-top: 0.2rem; }
+.flight-time { font-size: 0.85rem; font-weight: 600; color: var(--ink); margin-top: 0.35rem; }
+.flight-line { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.25rem; }
+.flight-line-bar { width: 100%; height: 2px; background: linear-gradient(90deg, #1e40af, #93c5fd); border-radius: 2px; position: relative; }
+.flight-line-bar::before, .flight-line-bar::after { content: ''; position: absolute; top: 50%; transform: translateY(-50%); width: 6px; height: 6px; border-radius: 50%; background: #1e40af; }
+.flight-line-bar::before { left: -3px; }
+.flight-line-bar::after { right: -3px; }
+.flight-duration-label { font-size: 0.72rem; color: var(--muted); }
+.flight-details { padding: 0.75rem 1.25rem; display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
 </style>
 <?php $__env->stopPush(); ?>
 
@@ -117,8 +132,11 @@
                     </div>
                     <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap">
                         <span style="font-size:0.78rem;opacity:0.65"><?php echo e($day->date->format('l, M d, Y')); ?><?php echo e($dayIsPast ? ' · 🏁' : ''); ?></span>
-                        <?php if($day->destinations->count()): ?>
+                        <?php if($day->flights->count() || $day->destinations->count()): ?>
                             <div class="day-summary-pills">
+                                <?php $__currentLoopData = $day->flights; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $fl): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                    <span class="day-pill">✈ <?php echo e($fl->departure_airport); ?> → <?php echo e($fl->arrival_airport); ?></span>
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                 <?php $__currentLoopData = $day->destinations; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $d): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                     <span class="day-pill"><?php echo e($d->emoji); ?> <?php echo e($d->city); ?></span>
                                 <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
@@ -208,7 +226,67 @@
                     <?php endif; ?>
 
                     
-                    <div style="display:flex;justify-content:flex-end;margin-bottom:1rem">
+                    <?php $__currentLoopData = $day->flights; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $flight): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        <?php
+                            $cabinLabels = ['economy'=>'Economy','premium_economy'=>'Premium Economy','business'=>'Business','first'=>'First Class'];
+                            $flDurH = intdiv($flight->duration_minutes ?? 0, 60);
+                            $flDurM = ($flight->duration_minutes ?? 0) % 60;
+                        ?>
+                        <div class="flight-card">
+                            <div class="flight-card-header">
+                                <div class="flex gap-1" style="align-items:center;flex-wrap:wrap">
+                                    <span style="font-size:1.1rem">✈</span>
+                                    <?php if($flight->flight_number): ?><span style="font-weight:700;letter-spacing:0.05em"><?php echo e($flight->flight_number); ?></span><?php endif; ?>
+                                    <?php if($flight->airline): ?><span style="opacity:0.8;font-size:0.85rem"><?php echo e($flight->airline); ?></span><?php endif; ?>
+                                </div>
+                                <div class="flex gap-1">
+                                    <button
+                                        onclick="openFlightModal(<?php echo e($day->id); ?>, <?php echo e($flight->id); ?>)"
+                                        class="btn btn-sm" style="background:rgba(255,255,255,0.15);color:white;border:1px solid rgba(255,255,255,0.25)">✏️ Edit</button>
+                                    <form method="POST" action="<?php echo e(route('flights.destroy', $flight)); ?>" onsubmit="return confirm('Remove this flight?')" onclick="event.stopPropagation()">
+                                        <?php echo csrf_field(); ?> <?php echo method_field('DELETE'); ?>
+                                        <button class="btn btn-sm" style="background:rgba(193,68,14,0.3);color:white;border:1px solid rgba(193,68,14,0.5)">✕</button>
+                                    </form>
+                                </div>
+                            </div>
+                            <div class="flight-route">
+                                <div class="flight-airport-block">
+                                    <div class="flight-airport-code"><?php echo e(strtoupper($flight->departure_airport)); ?></div>
+                                    <?php if($flight->departure_city): ?><div class="flight-airport-city"><?php echo e($flight->departure_city); ?></div><?php endif; ?>
+                                    <?php if($flight->departure_time): ?><div class="flight-time"><?php echo e($flight->departure_time); ?></div><?php endif; ?>
+                                </div>
+                                <div class="flight-line">
+                                    <?php if($flight->duration_minutes): ?>
+                                        <div class="flight-duration-label"><?php echo e($flDurH > 0 ? $flDurH.'h '.$flDurM.'min' : $flDurM.'min'); ?></div>
+                                    <?php endif; ?>
+                                    <div class="flight-line-bar"></div>
+                                </div>
+                                <div class="flight-airport-block">
+                                    <div class="flight-airport-code"><?php echo e(strtoupper($flight->arrival_airport)); ?></div>
+                                    <?php if($flight->arrival_city): ?><div class="flight-airport-city"><?php echo e($flight->arrival_city); ?></div><?php endif; ?>
+                                    <?php if($flight->arrival_time): ?><div class="flight-time"><?php echo e($flight->arrival_time); ?></div><?php endif; ?>
+                                </div>
+                            </div>
+                            <div class="flight-details">
+                                <?php if($flight->locator): ?>
+                                    <span class="badge badge-blue">🎫 <?php echo e(strtoupper($flight->locator)); ?></span>
+                                <?php endif; ?>
+                                <?php if($flight->seat): ?>
+                                    <span class="badge badge-purple">💺 <?php echo e($flight->seat); ?></span>
+                                <?php endif; ?>
+                                <?php if($flight->cabin_class): ?>
+                                    <span class="badge badge-gold"><?php echo e($cabinLabels[$flight->cabin_class] ?? $flight->cabin_class); ?></span>
+                                <?php endif; ?>
+                                <?php if($flight->notes): ?>
+                                    <span class="text-sm text-muted">📝 <?php echo e($flight->notes); ?></span>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+
+                    
+                    <div style="display:flex;justify-content:flex-end;gap:0.5rem;margin-bottom:1rem">
+                        <button onclick="openFlightModal(<?php echo e($day->id); ?>)" class="btn btn-sm btn-outline" style="border-color:#1e40af;color:#1e40af">✈ Add Flight</button>
                         <button onclick="openModal('dest-modal-<?php echo e($day->id); ?>')" class="btn btn-sm btn-gold">+ Add City</button>
                     </div>
 
@@ -417,6 +495,47 @@
             </div>
         </div>
 
+        
+        <?php $__currentLoopData = $day->flights; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $flight): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+        <div id="flight-edit-modal-<?php echo e($flight->id); ?>" class="modal-backdrop">
+            <div class="modal" style="max-width:580px">
+                <div class="modal-header">
+                    <h3>Edit Flight — Day <?php echo e($day->day_number); ?></h3>
+                    <button class="modal-close" onclick="closeModal('flight-edit-modal-<?php echo e($flight->id); ?>')">×</button>
+                </div>
+                <div class="modal-body">
+                    <form method="POST" action="<?php echo e(route('flights.update', $flight)); ?>">
+                        <?php echo csrf_field(); ?> <?php echo method_field('PUT'); ?>
+                        <?php echo $__env->make('trips._flight_form', ['f' => $flight], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+                        <div class="flex gap-1">
+                            <button type="button" onclick="closeModal('flight-edit-modal-<?php echo e($flight->id); ?>')" class="btn btn-outline">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+
+        <div id="flight-add-modal-<?php echo e($day->id); ?>" class="modal-backdrop">
+            <div class="modal" style="max-width:580px">
+                <div class="modal-header">
+                    <h3>Add Flight — Day <?php echo e($day->day_number); ?></h3>
+                    <button class="modal-close" onclick="closeModal('flight-add-modal-<?php echo e($day->id); ?>')">×</button>
+                </div>
+                <div class="modal-body">
+                    <form method="POST" action="<?php echo e(route('flights.store', $day)); ?>">
+                        <?php echo csrf_field(); ?>
+                        <?php echo $__env->make('trips._flight_form', ['f' => null], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+                        <div class="flex gap-1">
+                            <button type="button" onclick="closeModal('flight-add-modal-<?php echo e($day->id); ?>')" class="btn btn-outline">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Add Flight</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
         <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
     </div>
 
@@ -439,6 +558,14 @@
 
 <?php $__env->startPush('scripts'); ?>
 <script>
+function openFlightModal(dayId, flightId = null) {
+    if (flightId) {
+        openModal(`flight-edit-modal-${flightId}`);
+    } else {
+        openModal(`flight-add-modal-${dayId}`);
+    }
+}
+
 function toggleAccordion(dayId) {
     const trigger = document.querySelector(`[onclick="toggleAccordion(${dayId})"]`);
     const body = document.getElementById(`accordion-body-${dayId}`);

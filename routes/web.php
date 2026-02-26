@@ -7,6 +7,7 @@ use App\Http\Controllers\TripController;
 use App\Http\Controllers\DestinationController;
 use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\DocumentController;
+use App\Http\Controllers\FlightController;
 use Illuminate\Support\Facades\Route;
 
 // Auth
@@ -96,4 +97,9 @@ Route::middleware("auth")->group(function () {
         DocumentController::class,
         "destroy",
     ])->name("documents.destroy");
+
+    // Flights
+    Route::post("/days/{day}/flights", [FlightController::class, "store"])->name("flights.store");
+    Route::put("/flights/{flight}", [FlightController::class, "update"])->name("flights.update");
+    Route::delete("/flights/{flight}", [FlightController::class, "destroy"])->name("flights.destroy");
 });

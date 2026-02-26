@@ -91,6 +91,21 @@
 .transport-btn.active { background: var(--ink); color: white; border-color: var(--ink); }
 .transport-btn:hover:not(.active) { border-color: var(--gold); }
 .stop-row { background: white; border: 1px solid var(--cream); border-radius: 8px; padding: 0.5rem 0.75rem; }
+/* Flight feature */
+.flight-card { border: 1.5px solid #dbeafe; border-radius: 10px; overflow: hidden; margin-bottom: 0.75rem; background: white; }
+.flight-card-header { background: linear-gradient(90deg, #1e3a5f, #1e40af); color: white; padding: 0.75rem 1.25rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.flight-route { display: flex; align-items: center; gap: 1rem; padding: 1rem 1.25rem; border-bottom: 1px solid #eff6ff; }
+.flight-airport-block { text-align: center; min-width: 70px; }
+.flight-airport-code { font-size: 1.6rem; font-weight: 700; color: var(--ink); letter-spacing: 0.05em; line-height: 1; }
+.flight-airport-city { font-size: 0.72rem; color: var(--muted); margin-top: 0.2rem; }
+.flight-time { font-size: 0.85rem; font-weight: 600; color: var(--ink); margin-top: 0.35rem; }
+.flight-line { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.25rem; }
+.flight-line-bar { width: 100%; height: 2px; background: linear-gradient(90deg, #1e40af, #93c5fd); border-radius: 2px; position: relative; }
+.flight-line-bar::before, .flight-line-bar::after { content: ''; position: absolute; top: 50%; transform: translateY(-50%); width: 6px; height: 6px; border-radius: 50%; background: #1e40af; }
+.flight-line-bar::before { left: -3px; }
+.flight-line-bar::after { right: -3px; }
+.flight-duration-label { font-size: 0.72rem; color: var(--muted); }
+.flight-details { padding: 0.75rem 1.25rem; display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
 </style>
 @endpush
 
@@ -117,8 +132,11 @@
                     </div>
                     <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap">
                         <span style="font-size:0.78rem;opacity:0.65">{{ $day->date->format('l, M d, Y') }}{{ $dayIsPast ? ' · 🏁' : '' }}</span>
-                        @if($day->destinations->count())
+                        @if($day->flights->count() || $day->destinations->count())
                             <div class="day-summary-pills">
+                                @foreach($day->flights as $fl)
+                                    <span class="day-pill">✈ {{ $fl->departure_airport }} → {{ $fl->arrival_airport }}</span>
+                                @endforeach
                                 @foreach($day->destinations as $d)
                                     <span class="day-pill">{{ $d->emoji }} {{ $d->city }}</span>
                                 @endforeach
@@ -207,8 +225,68 @@
                         </div>
                     @endif
 
-                    {{-- Add City button --}}
-                    <div style="display:flex;justify-content:flex-end;margin-bottom:1rem">
+                    {{-- Flights Section --}}
+                    @foreach($day->flights as $flight)
+                        @php
+                            $cabinLabels = ['economy'=>'Economy','premium_economy'=>'Premium Economy','business'=>'Business','first'=>'First Class'];
+                            $flDurH = intdiv($flight->duration_minutes ?? 0, 60);
+                            $flDurM = ($flight->duration_minutes ?? 0) % 60;
+                        @endphp
+                        <div class="flight-card">
+                            <div class="flight-card-header">
+                                <div class="flex gap-1" style="align-items:center;flex-wrap:wrap">
+                                    <span style="font-size:1.1rem">✈</span>
+                                    @if($flight->flight_number)<span style="font-weight:700;letter-spacing:0.05em">{{ $flight->flight_number }}</span>@endif
+                                    @if($flight->airline)<span style="opacity:0.8;font-size:0.85rem">{{ $flight->airline }}</span>@endif
+                                </div>
+                                <div class="flex gap-1">
+                                    <button
+                                        onclick="openFlightModal({{ $day->id }}, {{ $flight->id }})"
+                                        class="btn btn-sm" style="background:rgba(255,255,255,0.15);color:white;border:1px solid rgba(255,255,255,0.25)">✏️ Edit</button>
+                                    <form method="POST" action="{{ route('flights.destroy', $flight) }}" onsubmit="return confirm('Remove this flight?')" onclick="event.stopPropagation()">
+                                        @csrf @method('DELETE')
+                                        <button class="btn btn-sm" style="background:rgba(193,68,14,0.3);color:white;border:1px solid rgba(193,68,14,0.5)">✕</button>
+                                    </form>
+                                </div>
+                            </div>
+                            <div class="flight-route">
+                                <div class="flight-airport-block">
+                                    <div class="flight-airport-code">{{ strtoupper($flight->departure_airport) }}</div>
+                                    @if($flight->departure_city)<div class="flight-airport-city">{{ $flight->departure_city }}</div>@endif
+                                    @if($flight->departure_time)<div class="flight-time">{{ $flight->departure_time }}</div>@endif
+                                </div>
+                                <div class="flight-line">
+                                    @if($flight->duration_minutes)
+                                        <div class="flight-duration-label">{{ $flDurH > 0 ? $flDurH.'h '.$flDurM.'min' : $flDurM.'min' }}</div>
+                                    @endif
+                                    <div class="flight-line-bar"></div>
+                                </div>
+                                <div class="flight-airport-block">
+                                    <div class="flight-airport-code">{{ strtoupper($flight->arrival_airport) }}</div>
+                                    @if($flight->arrival_city)<div class="flight-airport-city">{{ $flight->arrival_city }}</div>@endif
+                                    @if($flight->arrival_time)<div class="flight-time">{{ $flight->arrival_time }}</div>@endif
+                                </div>
+                            </div>
+                            <div class="flight-details">
+                                @if($flight->locator)
+                                    <span class="badge badge-blue">🎫 {{ strtoupper($flight->locator) }}</span>
+                                @endif
+                                @if($flight->seat)
+                                    <span class="badge badge-purple">💺 {{ $flight->seat }}</span>
+                                @endif
+                                @if($flight->cabin_class)
+                                    <span class="badge badge-gold">{{ $cabinLabels[$flight->cabin_class] ?? $flight->cabin_class }}</span>
+                                @endif
+                                @if($flight->notes)
+                                    <span class="text-sm text-muted">📝 {{ $flight->notes }}</span>
+                                @endif
+                            </div>
+                        </div>
+                    @endforeach
+
+                    {{-- Add City / Add Flight buttons --}}
+                    <div style="display:flex;justify-content:flex-end;gap:0.5rem;margin-bottom:1rem">
+                        <button onclick="openFlightModal({{ $day->id }})" class="btn btn-sm btn-outline" style="border-color:#1e40af;color:#1e40af">✈ Add Flight</button>
                         <button onclick="openModal('dest-modal-{{ $day->id }}')" class="btn btn-sm btn-gold">+ Add City</button>
                     </div>
 
@@ -417,6 +495,47 @@
             </div>
         </div>
 
+        {{-- Flight Modals (one per day, for each flight + new) --}}
+        @foreach($day->flights as $flight)
+        <div id="flight-edit-modal-{{ $flight->id }}" class="modal-backdrop">
+            <div class="modal" style="max-width:580px">
+                <div class="modal-header">
+                    <h3>Edit Flight — Day {{ $day->day_number }}</h3>
+                    <button class="modal-close" onclick="closeModal('flight-edit-modal-{{ $flight->id }}')">×</button>
+                </div>
+                <div class="modal-body">
+                    <form method="POST" action="{{ route('flights.update', $flight) }}">
+                        @csrf @method('PUT')
+                        @include('trips._flight_form', ['f' => $flight])
+                        <div class="flex gap-1">
+                            <button type="button" onclick="closeModal('flight-edit-modal-{{ $flight->id }}')" class="btn btn-outline">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        @endforeach
+
+        <div id="flight-add-modal-{{ $day->id }}" class="modal-backdrop">
+            <div class="modal" style="max-width:580px">
+                <div class="modal-header">
+                    <h3>Add Flight — Day {{ $day->day_number }}</h3>
+                    <button class="modal-close" onclick="closeModal('flight-add-modal-{{ $day->id }}')">×</button>
+                </div>
+                <div class="modal-body">
+                    <form method="POST" action="{{ route('flights.store', $day) }}">
+                        @csrf
+                        @include('trips._flight_form', ['f' => null])
+                        <div class="flex gap-1">
+                            <button type="button" onclick="closeModal('flight-add-modal-{{ $day->id }}')" class="btn btn-outline">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Add Flight</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
         @endforeach
     </div>
 
@@ -439,6 +558,14 @@
 
 @push('scripts')
 <script>
+function openFlightModal(dayId, flightId = null) {
+    if (flightId) {
+        openModal(`flight-edit-modal-${flightId}`);
+    } else {
+        openModal(`flight-add-modal-${dayId}`);
+    }
+}
+
 function toggleAccordion(dayId) {
     const trigger = document.querySelector(`[onclick="toggleAccordion(${dayId})"]`);
     const body = document.getElementById(`accordion-body-${dayId}`);

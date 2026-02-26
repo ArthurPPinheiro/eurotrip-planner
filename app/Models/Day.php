@@ -11,4 +11,5 @@ class Day extends Model
 
     public function trip() { return $this->belongsTo(Trip::class); }
     public function destinations() { return $this->hasMany(Destination::class)->orderBy('order'); }
+    public function route() { return $this->hasOne(DayRoute::class); }
 }

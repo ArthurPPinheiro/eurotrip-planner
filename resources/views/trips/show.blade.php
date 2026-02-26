@@ -82,6 +82,15 @@
     cursor: pointer; font-size: 0.8rem; line-height: 1; transition: all 0.2s; font-family: inherit;
 }
 .day-delete-btn:hover { background: rgba(193,68,14,0.65); border-color: rgba(193,68,14,0.9); color: white; }
+/* Route feature */
+.route-card { border: 1.5px solid var(--cream); border-radius: 10px; padding: 1rem; margin-bottom: 1rem; background: #fafafa; }
+.route-summary-bar { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 0.6rem; }
+.route-map { height: 260px; border-radius: 8px; overflow: hidden; border: 1px solid var(--cream); }
+.route-map-preview { height: 200px; border-radius: 8px; overflow: hidden; border: 1px solid var(--cream); margin-bottom: 0.5rem; }
+.transport-btn { padding: 0.4rem 0.875rem; border-radius: 20px; border: 1.5px solid var(--cream); background: white; cursor: pointer; font-family: inherit; font-size: 0.85rem; transition: all 0.2s; }
+.transport-btn.active { background: var(--ink); color: white; border-color: var(--ink); }
+.transport-btn:hover:not(.active) { border-color: var(--gold); }
+.stop-row { background: white; border: 1px solid var(--cream); border-radius: 8px; padding: 0.5rem 0.75rem; }
 </style>
 @endpush
 
@@ -136,6 +145,61 @@
             {{-- Accordion Body --}}
             <div id="accordion-body-{{ $day->id }}" class="accordion-body {{ $loop->first ? 'open' : '' }}">
                 <div class="accordion-inner">
+
+                    {{-- Route Section --}}
+                    @if($day->route)
+                        @php
+                            $routeStops = $day->route->stops->map(fn($s) => [
+                                'city' => $s->city, 'country' => $s->country,
+                                'latitude' => (float)$s->latitude, 'longitude' => (float)$s->longitude
+                            ])->toArray();
+                            $rh = intdiv($day->route->total_duration_minutes ?? 0, 60);
+                            $rm = ($day->route->total_duration_minutes ?? 0) % 60;
+                            $modeIcon = ['car'=>'🚗','bus'=>'🚌','train'=>'🚂'][$day->route->transport_mode] ?? '🚗';
+                            $modeLabel = ['car'=>'Car','bus'=>'Bus','train'=>'Train'][$day->route->transport_mode] ?? 'Car';
+                        @endphp
+                        <div class="route-card">
+                            <div class="route-summary-bar">
+                                <span style="font-weight:600">{{ $modeIcon }} {{ $modeLabel }}</span>
+                                @if($day->route->total_distance_km)
+                                    <span class="badge badge-blue">📏 {{ number_format($day->route->total_distance_km, 1) }} km</span>
+                                @endif
+                                @if($day->route->total_duration_minutes)
+                                    <span class="badge badge-gold">⏱ {{ $rh > 0 ? $rh.'h '.$rm.'min' : $rm.'min' }}</span>
+                                @endif
+                            </div>
+                            <div style="display:flex;align-items:center;gap:0.3rem;flex-wrap:wrap;margin-bottom:0.75rem;font-size:0.85rem;color:var(--muted)">
+                                @foreach($day->route->stops as $stop)
+                                    @if(!$loop->first)<span style="opacity:0.5">→</span>@endif
+                                    <span>{{ $stop->city }}</span>
+                                @endforeach
+                            </div>
+                            <div class="route-map"
+                                 id="route-map-{{ $day->id }}"
+                                 data-day-id="{{ $day->id }}"
+                                 data-stops="{{ json_encode($routeStops) }}"
+                                 data-mode="{{ $day->route->transport_mode }}"></div>
+                            <div class="flex gap-1" style="margin-top:0.75rem">
+                                <button
+                                    data-day="{{ $day->id }}"
+                                    data-stops="{{ json_encode($routeStops) }}"
+                                    data-mode="{{ $day->route->transport_mode }}"
+                                    onclick="openRouteModalFromEl(this)"
+                                    class="btn btn-sm btn-outline">✏️ Edit Route</button>
+                                <form method="POST" action="{{ route('routes.destroy', $day->route) }}" onsubmit="return confirm('Remove this route?')">
+                                    @csrf @method('DELETE')
+                                    <button class="btn btn-sm btn-ghost" style="color:var(--danger)">✕ Remove Route</button>
+                                </form>
+                            </div>
+                        </div>
+                    @else
+                        <div style="margin-bottom:1rem">
+                            <button
+                                data-day="{{ $day->id }}"
+                                onclick="openRouteModalFromEl(this)"
+                                class="btn btn-sm btn-outline">🗺️ Add Route</button>
+                        </div>
+                    @endif
 
                     {{-- Add City button --}}
                     <div style="display:flex;justify-content:flex-end;margin-bottom:1rem">
@@ -290,6 +354,63 @@
                 </div>
             </div>
         </div>
+
+        {{-- Route Modal --}}
+        <div id="route-modal-{{ $day->id }}" class="modal-backdrop">
+            <div class="modal" style="max-width:640px">
+                <div class="modal-header">
+                    <h3>Route — Day {{ $day->day_number }}</h3>
+                    <button class="modal-close" onclick="closeModal('route-modal-{{ $day->id }}')">×</button>
+                </div>
+                <div class="modal-body">
+                    <form method="POST"
+                          id="route-form-{{ $day->id }}"
+                          action="{{ $day->route ? route('routes.update', $day->route) : route('routes.store', $day) }}">
+                        @csrf
+                        @if($day->route) @method('PUT') @endif
+
+                        {{-- Transport mode --}}
+                        <div class="form-group">
+                            <label class="form-label">Transport Mode</label>
+                            <div class="flex gap-1" style="flex-wrap:wrap">
+                                <button type="button" class="transport-btn" data-mode="car"
+                                        onclick="setTransport({{ $day->id }}, 'car')">🚗 Car</button>
+                                <button type="button" class="transport-btn" data-mode="bus"
+                                        onclick="setTransport({{ $day->id }}, 'bus')">🚌 Bus</button>
+                                <button type="button" class="transport-btn" data-mode="train"
+                                        onclick="setTransport({{ $day->id }}, 'train')">🚂 Train</button>
+                            </div>
+                            <input type="hidden" name="transport_mode" id="transport-input-{{ $day->id }}" value="car">
+                        </div>
+
+                        {{-- Stops --}}
+                        <div class="form-group">
+                            <label class="form-label">Stops <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:0.8rem">(min 2 — type city then click away to geocode)</span></label>
+                            <div id="stops-list-{{ $day->id }}" style="display:flex;flex-direction:column;gap:0.5rem"></div>
+                            <button type="button" onclick="addStop({{ $day->id }})" class="btn btn-sm btn-ghost" style="margin-top:0.5rem">+ Add Stop</button>
+                        </div>
+
+                        {{-- Map preview --}}
+                        <div class="form-group">
+                            <div id="route-preview-{{ $day->id }}" class="route-map-preview"></div>
+                            <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap">
+                                <button type="button" onclick="calculateRoute({{ $day->id }})" class="btn btn-sm btn-outline">🔄 Calculate Route</button>
+                                <span id="route-calc-summary-{{ $day->id }}" style="font-size:0.85rem;color:var(--muted)"></span>
+                            </div>
+                        </div>
+
+                        <input type="hidden" name="total_distance_km" id="total-distance-{{ $day->id }}">
+                        <input type="hidden" name="total_duration_minutes" id="total-duration-{{ $day->id }}">
+
+                        <div class="flex gap-1">
+                            <button type="button" onclick="closeModal('route-modal-{{ $day->id }}')" class="btn btn-outline">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Save Route</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
         @endforeach
     </div>
 @endif
@@ -303,8 +424,280 @@ function toggleAccordion(dayId) {
     body.classList.toggle('open');
 }
 
+// ─── Route feature ───────────────────────────────────────────────
 
+function haversine(lat1, lon1, lat2, lon2) {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLon/2)**2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
 
+function formatDuration(minutes) {
+    const h = Math.floor(minutes / 60);
+    const m = Math.round(minutes % 60);
+    return h > 0 ? `${h}h ${m}min` : `${m}min`;
+}
+
+function setTransport(dayId, mode) {
+    document.getElementById(`transport-input-${dayId}`).value = mode;
+    document.querySelectorAll(`#route-modal-${dayId} .transport-btn`).forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.mode === mode);
+    });
+}
+
+const stopCounter = {};
+const leafletMaps = {};
+
+function addStop(dayId, prefill = null) {
+    if (!stopCounter[dayId]) stopCounter[dayId] = 0;
+    const idx = stopCounter[dayId]++;
+    const list = document.getElementById(`stops-list-${dayId}`);
+    const row = document.createElement('div');
+    row.className = 'stop-row';
+    row.dataset.idx = idx;
+    const geocoded = prefill ? '✓' : '';
+    const geocodedColor = prefill ? 'var(--accent)' : '';
+    row.innerHTML = `
+        <div style="display:flex;align-items:center;gap:0.5rem">
+            <span class="stop-num" style="width:22px;height:22px;border-radius:50%;background:var(--ink);color:white;display:flex;align-items:center;justify-content:center;font-size:0.7rem;flex-shrink:0;font-weight:600">●</span>
+            <input type="text" class="form-control stop-city-input" placeholder="City (e.g. Paris)" style="flex:1;padding:0.4rem 0.6rem"
+                   value="${prefill?.city || ''}" onblur="geocodeStop(${dayId}, this)">
+            <input type="hidden" class="stop-lat" name="stops[${idx}][latitude]" value="${prefill?.latitude || ''}">
+            <input type="hidden" class="stop-lng" name="stops[${idx}][longitude]" value="${prefill?.longitude || ''}">
+            <input type="hidden" class="stop-country" name="stops[${idx}][country]" value="${prefill?.country || ''}">
+            <input type="hidden" class="stop-city-val" name="stops[${idx}][city]" value="${prefill?.city || ''}">
+            <span class="stop-status" style="font-size:0.9rem;flex-shrink:0;color:${geocodedColor}">${geocoded}</span>
+            <button type="button" onclick="removeStop(this, ${dayId})" class="btn btn-sm btn-ghost" style="color:var(--danger);padding:0.2rem 0.4rem;flex-shrink:0">✕</button>
+        </div>
+    `;
+    list.appendChild(row);
+    updateStopNumbers(dayId);
+}
+
+function removeStop(btn, dayId) {
+    const list = document.getElementById(`stops-list-${dayId}`);
+    if (list.querySelectorAll('.stop-row').length <= 2) { alert('You need at least 2 stops.'); return; }
+    btn.closest('.stop-row').remove();
+    updateStopNumbers(dayId);
+}
+
+function updateStopNumbers(dayId) {
+    document.querySelectorAll(`#stops-list-${dayId} .stop-row`).forEach((row, i) => {
+        row.querySelector('.stop-num').textContent = i + 1;
+        row.querySelector('.stop-lat').name = `stops[${i}][latitude]`;
+        row.querySelector('.stop-lng').name = `stops[${i}][longitude]`;
+        row.querySelector('.stop-country').name = `stops[${i}][country]`;
+        row.querySelector('.stop-city-val').name = `stops[${i}][city]`;
+    });
+}
+
+async function geocodeStop(dayId, input) {
+    const city = input.value.trim();
+    if (!city) return;
+    const row = input.closest('.stop-row');
+    const statusEl = row.querySelector('.stop-status');
+    statusEl.textContent = '⏳'; statusEl.style.color = '';
+    try {
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(city)}&format=json&limit=1`, {
+            headers: { 'Accept-Language': 'en' }
+        });
+        const data = await res.json();
+        if (data.length > 0) {
+            const place = data[0];
+            row.querySelector('.stop-lat').value = place.lat;
+            row.querySelector('.stop-lng').value = place.lon;
+            row.querySelector('.stop-city-val').value = city;
+            const parts = place.display_name.split(', ');
+            row.querySelector('.stop-country').value = parts[parts.length - 1] || '';
+            statusEl.textContent = '✓'; statusEl.style.color = 'var(--accent)';
+            updatePreviewMap(dayId);
+        } else {
+            statusEl.textContent = '✗'; statusEl.style.color = 'var(--danger)';
+        }
+    } catch(e) {
+        statusEl.textContent = '✗'; statusEl.style.color = 'var(--danger)';
+    }
+}
+
+function getModalStops(dayId) {
+    const stops = [];
+    document.querySelectorAll(`#stops-list-${dayId} .stop-row`).forEach(row => {
+        const lat = parseFloat(row.querySelector('.stop-lat').value);
+        const lng = parseFloat(row.querySelector('.stop-lng').value);
+        const city = row.querySelector('.stop-city-val').value;
+        if (!isNaN(lat) && !isNaN(lng)) stops.push({ lat, lng, city });
+    });
+    return stops;
+}
+
+function initPreviewMap(dayId) {
+    const mapEl = document.getElementById(`route-preview-${dayId}`);
+    if (!mapEl) return null;
+    if (leafletMaps[`preview-${dayId}`]) return leafletMaps[`preview-${dayId}`];
+    const map = L.map(mapEl).setView([48.8566, 2.3522], 5);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    }).addTo(map);
+    leafletMaps[`preview-${dayId}`] = map;
+    return map;
+}
+
+function clearMapLayers(map) {
+    map.eachLayer(layer => { if (!(layer instanceof L.TileLayer)) map.removeLayer(layer); });
+}
+
+function addStopMarkers(map, stops) {
+    stops.forEach((s, i) => {
+        L.marker([s.lat, s.lng], {
+            icon: L.divIcon({
+                html: `<div style="background:#1a1a2e;color:white;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.4)">${i+1}</div>`,
+                className: '', iconSize: [24,24], iconAnchor: [12,12]
+            })
+        }).addTo(map).bindPopup(s.city);
+    });
+}
+
+function updatePreviewMap(dayId) {
+    const stops = getModalStops(dayId);
+    if (stops.length < 2) return;
+    const map = initPreviewMap(dayId);
+    if (!map) return;
+    clearMapLayers(map);
+    const latlngs = stops.map(s => [s.lat, s.lng]);
+    L.polyline(latlngs, { color: '#1a1a2e', weight: 2, dashArray: '5,5' }).addTo(map);
+    addStopMarkers(map, stops);
+    map.fitBounds(L.latLngBounds(latlngs), { padding: [20, 20] });
+}
+
+async function calculateRoute(dayId) {
+    const stops = getModalStops(dayId);
+    if (stops.length < 2) { alert('Please add and geocode at least 2 stops.'); return; }
+    const mode = document.getElementById(`transport-input-${dayId}`).value;
+    const summaryEl = document.getElementById(`route-calc-summary-${dayId}`);
+    summaryEl.textContent = 'Calculating…'; summaryEl.style.color = 'var(--muted)';
+    let distKm, durationMin;
+
+    if (mode === 'car') {
+        try {
+            const coords = stops.map(s => `${s.lng},${s.lat}`).join(';');
+            const res = await fetch(`https://router.project-osrm.org/route/v1/driving/${coords}?overview=full&geometries=geojson`);
+            const data = await res.json();
+            if (data.code === 'Ok' && data.routes.length > 0) {
+                const route = data.routes[0];
+                distKm = route.distance / 1000;
+                durationMin = route.duration / 60;
+                const map = initPreviewMap(dayId);
+                clearMapLayers(map);
+                const geojsonLayer = L.geoJSON(route.geometry, { style: { color: '#1a1a2e', weight: 3 } }).addTo(map);
+                addStopMarkers(map, stops);
+                map.fitBounds(geojsonLayer.getBounds(), { padding: [20, 20] });
+            } else {
+                throw new Error('OSRM no route');
+            }
+        } catch(e) {
+            distKm = stops.reduce((sum, s, i) => i === 0 ? 0 : sum + haversine(stops[i-1].lat, stops[i-1].lng, s.lat, s.lng), 0);
+            durationMin = distKm / 90 * 60;
+            updatePreviewMap(dayId);
+        }
+    } else {
+        distKm = stops.reduce((sum, s, i) => i === 0 ? 0 : sum + haversine(stops[i-1].lat, stops[i-1].lng, s.lat, s.lng), 0);
+        durationMin = distKm / (mode === 'train' ? 150 : 70) * 60;
+        updatePreviewMap(dayId);
+    }
+
+    distKm = Math.round(distKm * 10) / 10;
+    durationMin = Math.round(durationMin);
+    document.getElementById(`total-distance-${dayId}`).value = distKm;
+    document.getElementById(`total-duration-${dayId}`).value = durationMin;
+    const modeLabel = { car: '🚗 Car', bus: '🚌 Bus', train: '🚂 Train' }[mode];
+    summaryEl.innerHTML = `<strong>${modeLabel}:</strong> ~${distKm} km · ${formatDuration(durationMin)}`;
+    summaryEl.style.color = 'var(--accent)';
+}
+
+function openRouteModalFromEl(btn) {
+    const dayId = btn.dataset.day;
+    const stopsJson = btn.dataset.stops;
+    const existingStops = stopsJson ? JSON.parse(stopsJson) : null;
+    const mode = btn.dataset.mode || 'car';
+    openRouteModal(dayId, existingStops, mode);
+}
+
+function openRouteModal(dayId, existingStops = null, mode = 'car') {
+    const list = document.getElementById(`stops-list-${dayId}`);
+    list.innerHTML = '';
+    stopCounter[dayId] = 0;
+
+    // Reset calc summary
+    const summaryEl = document.getElementById(`route-calc-summary-${dayId}`);
+    if (summaryEl) { summaryEl.textContent = ''; }
+
+    setTransport(dayId, mode);
+
+    if (existingStops && existingStops.length > 0) {
+        existingStops.forEach(stop => addStop(dayId, stop));
+    } else {
+        addStop(dayId); addStop(dayId);
+    }
+
+    openModal(`route-modal-${dayId}`);
+
+    // Destroy old preview map instance so Leaflet can re-init in modal
+    if (leafletMaps[`preview-${dayId}`]) {
+        leafletMaps[`preview-${dayId}`].remove();
+        delete leafletMaps[`preview-${dayId}`];
+    }
+
+    setTimeout(() => {
+        initPreviewMap(dayId);
+        if (existingStops && existingStops.length >= 2) updatePreviewMap(dayId);
+    }, 150);
+}
+
+// Initialize saved route display maps on page load
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.route-map[data-stops]').forEach(mapEl => {
+        const stops = JSON.parse(mapEl.dataset.stops);
+        const mode = mapEl.dataset.mode;
+        const dayId = mapEl.dataset.dayId;
+        if (stops.length < 2) return;
+
+        const map = L.map(mapEl).setView([stops[0].latitude, stops[0].longitude], 6);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(map);
+
+        const latlngs = stops.map(s => [s.latitude, s.longitude]);
+        const mappedStops = stops.map(s => ({ lat: s.latitude, lng: s.longitude, city: s.city }));
+
+        if (mode === 'car') {
+            const coords = stops.map(s => `${s.longitude},${s.latitude}`).join(';');
+            fetch(`https://router.project-osrm.org/route/v1/driving/${coords}?overview=full&geometries=geojson`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.code === 'Ok' && data.routes.length > 0) {
+                        L.geoJSON(data.routes[0].geometry, { style: { color: '#1a1a2e', weight: 3 } }).addTo(map);
+                    } else {
+                        L.polyline(latlngs, { color: '#1a1a2e', weight: 2, dashArray: '5,5' }).addTo(map);
+                    }
+                    addStopMarkers(map, mappedStops);
+                    map.fitBounds(L.latLngBounds(latlngs), { padding: [20, 20] });
+                })
+                .catch(() => {
+                    L.polyline(latlngs, { color: '#1a1a2e', weight: 2, dashArray: '5,5' }).addTo(map);
+                    addStopMarkers(map, mappedStops);
+                    map.fitBounds(L.latLngBounds(latlngs), { padding: [20, 20] });
+                });
+        } else {
+            L.polyline(latlngs, { color: '#1a1a2e', weight: 2, dashArray: '5,5' }).addTo(map);
+            addStopMarkers(map, mappedStops);
+            map.fitBounds(L.latLngBounds(latlngs), { padding: [20, 20] });
+        }
+
+        leafletMaps[`display-${dayId}`] = map;
+    });
+});
 </script>
 @endpush
 @endsection

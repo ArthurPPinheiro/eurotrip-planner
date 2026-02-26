@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DayController;
+use App\Http\Controllers\DayRouteController;
 use App\Http\Controllers\TripController;
 use App\Http\Controllers\DestinationController;
 use App\Http\Controllers\ActivityController;
@@ -52,6 +53,11 @@ Route::middleware("auth")->group(function () {
     Route::delete("/days/{day}", [DayController::class, "destroy"])->name(
         "days.destroy",
     );
+
+    // Day Routes
+    Route::post("/days/{day}/route", [DayRouteController::class, "store"])->name("routes.store");
+    Route::put("/routes/{route}", [DayRouteController::class, "update"])->name("routes.update");
+    Route::delete("/routes/{route}", [DayRouteController::class, "destroy"])->name("routes.destroy");
 
     // Destinations
     Route::post("/days/{day}/destinations", [

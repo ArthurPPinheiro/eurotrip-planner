@@ -65,7 +65,7 @@ class TripController extends Controller
     public function show(Trip $trip)
     {
         $this->authorize("view", $trip);
-        $trip->load(["days.destinations.activities.author", "members"]);
+        $trip->load(["days.destinations.activities.author", "days.route.stops", "members"]);
         return view("trips.show", compact("trip"));
     }
 

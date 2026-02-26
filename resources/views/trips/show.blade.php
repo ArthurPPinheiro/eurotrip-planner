@@ -105,7 +105,8 @@
 @else
     <div style="display:flex;flex-direction:column;gap:0.75rem">
         @foreach($trip->days as $day)
-        <div class="accordion-day">
+        @php $dayIsPast = $day->date->lt(today()); @endphp
+        <div class="accordion-day" style="{{ $dayIsPast ? 'opacity:0.55;filter:grayscale(0.35)' : '' }}">
 
             {{-- Accordion Trigger --}}
             <span class="accordion-trigger {{ $loop->first ? 'open' : '' }}" onclick="toggleAccordion({{ $day->id }})">
@@ -115,7 +116,7 @@
                         @if($day->title) — {{ $day->title }}@endif
                     </div>
                     <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap">
-                        <span style="font-size:0.78rem;opacity:0.65">{{ $day->date->format('l, M d, Y') }}</span>
+                        <span style="font-size:0.78rem;opacity:0.65">{{ $day->date->format('l, M d, Y') }}{{ $dayIsPast ? ' · 🏁' : '' }}</span>
                         @if($day->destinations->count())
                             <div class="day-summary-pills">
                                 @foreach($day->destinations as $d)

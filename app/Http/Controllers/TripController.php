@@ -14,7 +14,8 @@ class TripController extends Controller
         $trips = Auth::user()
             ->trips()
             ->with("creator", "members")
-            ->latest()
+            ->orderByRaw("CASE WHEN start_date IS NULL THEN 1 ELSE 0 END")
+            ->orderBy("start_date", "asc")
             ->get();
         return view("trips.index", compact("trips"));
     }

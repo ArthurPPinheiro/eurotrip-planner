@@ -27,9 +27,10 @@
 @else
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.25rem">
         @foreach($trips as $trip)
-        <a href="{{ route('trips.show', $trip) }}">
+        @php $isPast = $trip->end_date?->lt(today()); @endphp
+        <a href="{{ route('trips.show', $trip) }}" style="{{ $isPast ? 'opacity:0.55;filter:grayscale(0.4)' : '' }}">
             <div class="card" style="transition:transform 0.2s,box-shadow 0.2s" onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 12px 32px rgba(26,26,46,0.15)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
-                <div style="background:linear-gradient(135deg,var(--ink),#2d2d4e);padding:1.5rem;position:relative;overflow:hidden">
+                <div style="background:{{ $isPast ? 'linear-gradient(135deg,#5a5a6e,#3a3a4e)' : 'linear-gradient(135deg,var(--ink),#2d2d4e)' }};padding:1.5rem;position:relative;overflow:hidden">
                     <div style="position:absolute;right:-20px;top:-20px;font-size:5rem;opacity:0.08">✈</div>
                     <h3 style="font-family:'Playfair Display',serif;font-size:1.25rem;color:white;margin-bottom:0.25rem">{{ $trip->name }}</h3>
                     @if($trip->start_date)
@@ -37,7 +38,7 @@
                             {{ $trip->start_date->format('M d') }} — {{ $trip->end_date?->format('M d, Y') ?? '?' }}
                         </p>
                         <p style="color:var(--cream);font-size:0.8rem">
-                            ⏰ In {{ $trip->getTimeUntilTrip() }} Days
+                            @if($isPast) 🏁 Trip completed @else ⏰ In {{ $trip->getTimeUntilTrip() }} Days @endif
                         </p>
                     @endif
                 </div>

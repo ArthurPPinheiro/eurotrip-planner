@@ -104,7 +104,8 @@
 <?php else: ?>
     <div style="display:flex;flex-direction:column;gap:0.75rem">
         <?php $__currentLoopData = $trip->days; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $day): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-        <div class="accordion-day">
+        <?php $dayIsPast = $day->date->lt(today()); ?>
+        <div class="accordion-day" style="<?php echo e($dayIsPast ? 'opacity:0.55;filter:grayscale(0.35)' : ''); ?>">
 
             
             <span class="accordion-trigger <?php echo e($loop->first ? 'open' : ''); ?>" onclick="toggleAccordion(<?php echo e($day->id); ?>)">
@@ -115,7 +116,7 @@
                         <?php if($day->title): ?> — <?php echo e($day->title); ?><?php endif; ?>
                     </div>
                     <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap">
-                        <span style="font-size:0.78rem;opacity:0.65"><?php echo e($day->date->format('l, M d, Y')); ?></span>
+                        <span style="font-size:0.78rem;opacity:0.65"><?php echo e($day->date->format('l, M d, Y')); ?><?php echo e($dayIsPast ? ' · 🏁' : ''); ?></span>
                         <?php if($day->destinations->count()): ?>
                             <div class="day-summary-pills">
                                 <?php $__currentLoopData = $day->destinations; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $d): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>

@@ -133,11 +133,10 @@
             <span class="accordion-trigger {{ $loop->first ? 'open' : '' }}" onclick="toggleAccordion({{ $day->id }})">
                 <div style="flex:1;min-width:0">
                     <div style="font-family:'Playfair Display',serif;font-size:1.05rem;margin-bottom:0.25rem">
-                        Day {{ $day->day_number }}
-                        @if($day->title) — {{ $day->title }}@endif
+                        {{ $day->date->format('l, M d') }}{{ $dayIsPast ? ' · 🏁' : '' }}
                     </div>
                     <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap">
-                        <span style="font-size:0.78rem;opacity:0.65">{{ $day->date->format('l, M d, Y') }}{{ $dayIsPast ? ' · 🏁' : '' }}</span>
+                        <span style="font-size:0.78rem;opacity:0.65">Day {{ $day->day_number }}@if($day->title) · {{ $day->title }}@endif</span>
                         @if($day->flights->count() || $day->destinations->count())
                             <div class="day-summary-pills">
                                 @foreach($day->flights as $fl)

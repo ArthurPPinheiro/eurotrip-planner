@@ -132,12 +132,11 @@
             <span class="accordion-trigger <?php echo e($loop->first ? 'open' : ''); ?>" onclick="toggleAccordion(<?php echo e($day->id); ?>)">
                 <div style="flex:1;min-width:0">
                     <div style="font-family:'Playfair Display',serif;font-size:1.05rem;margin-bottom:0.25rem">
-                        Day <?php echo e($day->day_number); ?>
+                        <?php echo e($day->date->format('l, M d')); ?><?php echo e($dayIsPast ? ' · 🏁' : ''); ?>
 
-                        <?php if($day->title): ?> — <?php echo e($day->title); ?><?php endif; ?>
                     </div>
                     <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap">
-                        <span style="font-size:0.78rem;opacity:0.65"><?php echo e($day->date->format('l, M d, Y')); ?><?php echo e($dayIsPast ? ' · 🏁' : ''); ?></span>
+                        <span style="font-size:0.78rem;opacity:0.65">Day <?php echo e($day->day_number); ?><?php if($day->title): ?> · <?php echo e($day->title); ?><?php endif; ?></span>
                         <?php if($day->flights->count() || $day->destinations->count()): ?>
                             <div class="day-summary-pills">
                                 <?php $__currentLoopData = $day->flights; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $fl): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>

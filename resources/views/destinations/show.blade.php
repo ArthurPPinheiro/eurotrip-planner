@@ -77,7 +77,7 @@
         <h1>{{ $destination->city }}</h1>
         <div class="dest-hero-sub">
             {{ $destination->country }} &nbsp;•&nbsp;
-            {{ $day->date->format('l, M d, Y') }} &nbsp;•&nbsp;
+            {{ $day->date->translatedFormat('l, M d, Y') }} &nbsp;•&nbsp;
             <a href="{{ route('trips.show', $day->trip) }}" style="color: var(--terra-muted); text-decoration: none;">{{ $day->trip->name }}</a>
         </div>
         @if($destination->notes)
@@ -85,7 +85,7 @@
         @endif
     </div>
     <div class="dest-hero-actions">
-        <button onclick="openModal('modal-edit-dest')" class="btn btn-ghost btn-sm" style="background:rgba(255,255,255,.15); color:#fff; border-color:rgba(255,255,255,.3);">✏️ Edit</button>
+        <button onclick="openModal('modal-edit-dest')" class="btn btn-ghost btn-sm" style="background:rgba(255,255,255,.15); color:#fff; border-color:rgba(255,255,255,.3);">✏️ {{ __('general.btn.edit') }}</button>
     </div>
 </div>
 
@@ -93,14 +93,14 @@
     {{-- ===== POINTS OF INTEREST ===== --}}
     <div class="card">
         <div class="card-header">
-            <h3>📍 Points of Interest</h3>
-            <button onclick="openModal('modal-add-poi')" class="btn btn-primary btn-sm">+ Add</button>
+            <h3>📍 {{ __('destinations.poi.title') }}</h3>
+            <button onclick="openModal('modal-add-poi')" class="btn btn-primary btn-sm">{{ __('general.btn.add') }}</button>
         </div>
         <div class="card-body">
             @if($destination->pointsOfInterest->isEmpty())
                 <div class="empty-state" style="padding: 1.5rem 1rem;">
                     <div class="empty-icon" style="font-size: 2rem;">🗺️</div>
-                    <p>No points of interest yet.</p>
+                    <p>{{ __('destinations.poi.empty') }}</p>
                 </div>
             @else
                 <div style="display: flex; flex-direction: column; gap: .6rem;">
@@ -113,14 +113,14 @@
                         <div class="poi-category">{{ $cat['label'] }}</div>
                         @if($poi->description) <div class="poi-desc">{{ Str::limit($poi->description, 80) }}</div> @endif
                         @if($poi->address) <div class="poi-desc">📍 {{ $poi->address }}</div> @endif
-                        @if($poi->url) <div class="poi-desc"><a href="{{ $poi->url }}" target="_blank" style="color:var(--terra)">🔗 Link</a></div> @endif
+                        @if($poi->url) <div class="poi-desc"><a href="{{ $poi->url }}" target="_blank" style="color:var(--terra)">🔗 {{ __('general.label.link') }}</a></div> @endif
                     </div>
                     <div class="poi-actions">
                         <form method="POST" action="{{ route('pois.toggle', $poi) }}">
                             @csrf @method('PATCH')
-                            <button class="btn btn-xs" style="background: {{ $poi->visited ? 'var(--success)' : 'var(--cream-dark)' }}; color: {{ $poi->visited ? '#fff' : 'var(--text-muted)' }}; border: none; cursor: pointer;" title="{{ $poi->visited ? 'Mark as unvisited' : 'Mark as visited' }}">{{ $poi->visited ? '✓' : '○' }}</button>
+                            <button class="btn btn-xs" style="background: {{ $poi->visited ? 'var(--success)' : 'var(--cream-dark)' }}; color: {{ $poi->visited ? '#fff' : 'var(--text-muted)' }}; border: none; cursor: pointer;" title="{{ $poi->visited ? __('destinations.poi.unvisited') : __('destinations.poi.visited') }}">{{ $poi->visited ? '✓' : '○' }}</button>
                         </form>
-                        <form method="POST" action="{{ route('pois.destroy', $poi) }}" class="delete-form" onsubmit="return confirm('Remove?')">
+                        <form method="POST" action="{{ route('pois.destroy', $poi) }}" class="delete-form" data-confirm="{{ __('general.confirm.remove') }}">
                             @csrf @method('DELETE')
                             <button class="btn btn-xs btn-ghost" style="color:var(--danger); border-color:var(--danger);">✕</button>
                         </form>
@@ -135,14 +135,14 @@
     {{-- ===== ACCOMMODATION ===== --}}
     <div class="card">
         <div class="card-header">
-            <h3>🏨 Accommodation</h3>
-            <button onclick="openModal('modal-add-accommodation')" class="btn btn-primary btn-sm">+ Add</button>
+            <h3>🏨 {{ __('destinations.accommodation.title') }}</h3>
+            <button onclick="openModal('modal-add-accommodation')" class="btn btn-primary btn-sm">{{ __('general.btn.add') }}</button>
         </div>
         <div class="card-body">
             @if($destination->accommodations->isEmpty())
                 <div class="empty-state" style="padding: 1.5rem 1rem;">
                     <div class="empty-icon" style="font-size: 2rem;">🛏️</div>
-                    <p>No accommodation added yet.</p>
+                    <p>{{ __('destinations.accommodation.empty') }}</p>
                 </div>
             @else
                 @foreach($destination->accommodations as $accom)
@@ -151,17 +151,17 @@
                     <div class="item-title">{{ $atype['icon'] }} {{ $accom->name }} <span class="badge badge-muted">{{ $atype['label'] }}</span></div>
                     <div class="item-meta">
                         @if($accom->address) <span>📍 {{ $accom->address }}</span> @endif
-                        @if($accom->check_in) <span>🕐 In: {{ $accom->check_in }}</span> @endif
-                        @if($accom->check_out) <span>🕐 Out: {{ $accom->check_out }}</span> @endif
+                        @if($accom->check_in) <span>🕐 {{ __('destinations.accommodation.in') }} {{ $accom->check_in }}</span> @endif
+                        @if($accom->check_out) <span>🕐 {{ __('destinations.accommodation.out') }} {{ $accom->check_out }}</span> @endif
                         @if($accom->confirmation_code) <span>🔑 {{ $accom->confirmation_code }}</span> @endif
-                        @if($accom->price_per_night) <span>💰 {{ $accom->price_per_night }} {{ $accom->currency }}/night</span> @endif
-                        @if($accom->url) <span><a href="{{ $accom->url }}" target="_blank" style="color:var(--terra)">🔗 View</a></span> @endif
+                        @if($accom->price_per_night) <span>💰 {{ $accom->price_per_night }} {{ $accom->currency }}{{ __('destinations.accommodation.per_night') }}</span> @endif
+                        @if($accom->url) <span><a href="{{ $accom->url }}" target="_blank" style="color:var(--terra)">🔗 {{ __('general.label.view') }}</a></span> @endif
                     </div>
                     @if($accom->notes) <div style="font-size:.82rem; color:var(--text-muted); margin-top:.4rem; font-style:italic;">{{ $accom->notes }}</div> @endif
                     <div class="mt-1">
-                        <form method="POST" action="{{ route('accommodations.destroy', $accom) }}" class="delete-form" onsubmit="return confirm('Remove?')">
+                        <form method="POST" action="{{ route('accommodations.destroy', $accom) }}" class="delete-form" data-confirm="{{ __('general.confirm.remove') }}">
                             @csrf @method('DELETE')
-                            <button class="btn btn-xs btn-ghost" style="color:var(--danger); border-color:var(--danger);">✕ Remove</button>
+                            <button class="btn btn-xs btn-ghost" style="color:var(--danger); border-color:var(--danger);">✕ {{ __('general.btn.remove') }}</button>
                         </form>
                     </div>
                 </div>
@@ -173,14 +173,14 @@
     {{-- ===== RESERVATIONS ===== --}}
     <div class="card">
         <div class="card-header">
-            <h3>🎫 Reservations</h3>
-            <button onclick="openModal('modal-add-reservation')" class="btn btn-primary btn-sm">+ Add</button>
+            <h3>🎫 {{ __('destinations.reservation.title') }}</h3>
+            <button onclick="openModal('modal-add-reservation')" class="btn btn-primary btn-sm">{{ __('general.btn.add') }}</button>
         </div>
         <div class="card-body">
             @if($destination->reservations->isEmpty())
                 <div class="empty-state" style="padding: 1.5rem 1rem;">
                     <div class="empty-icon" style="font-size: 2rem;">📋</div>
-                    <p>No reservations yet.</p>
+                    <p>{{ __('destinations.reservation.empty') }}</p>
                 </div>
             @else
                 @foreach($destination->reservations as $res)
@@ -188,16 +188,16 @@
                 <div class="reservation-item">
                     <div class="item-title">{{ $rtype['icon'] }} {{ $res->title }} <span class="badge badge-muted">{{ $rtype['label'] }}</span></div>
                     <div class="item-meta">
-                        @if($res->datetime) <span>📅 {{ $res->datetime->format('M d, Y H:i') }}</span> @endif
+                        @if($res->datetime) <span>📅 {{ $res->datetime->translatedFormat('M d, Y H:i') }}</span> @endif
                         @if($res->venue) <span>📍 {{ $res->venue }}</span> @endif
                         @if($res->confirmation_code) <span>🔑 {{ $res->confirmation_code }}</span> @endif
                         @if($res->price) <span>💰 {{ $res->price }} {{ $res->currency }}</span> @endif
                     </div>
                     @if($res->notes) <div style="font-size:.82rem; color:var(--text-muted); margin-top:.4rem; font-style:italic;">{{ $res->notes }}</div> @endif
                     <div class="mt-1">
-                        <form method="POST" action="{{ route('reservations.destroy', $res) }}" class="delete-form" onsubmit="return confirm('Remove?')">
+                        <form method="POST" action="{{ route('reservations.destroy', $res) }}" class="delete-form" data-confirm="{{ __('general.confirm.remove') }}">
                             @csrf @method('DELETE')
-                            <button class="btn btn-xs btn-ghost" style="color:var(--danger); border-color:var(--danger);">✕ Remove</button>
+                            <button class="btn btn-xs btn-ghost" style="color:var(--danger); border-color:var(--danger);">✕ {{ __('general.btn.remove') }}</button>
                         </form>
                     </div>
                 </div>
@@ -209,7 +209,7 @@
     {{-- ===== COMMENTS ===== --}}
     <div class="card">
         <div class="card-header">
-            <h3>💬 Comments</h3>
+            <h3>💬 {{ __('destinations.comments.title') }}</h3>
         </div>
         <div class="card-body">
             @if($destination->comments->count())
@@ -221,7 +221,7 @@
                             <span class="comment-author">{{ $comment->author_name }}</span>
                             <span class="comment-date"> · {{ $comment->created_at->diffForHumans() }}</span>
                         </div>
-                        <form method="POST" action="{{ route('comments.destroy', $comment) }}" class="delete-form" onsubmit="return confirm('Delete comment?')">
+                        <form method="POST" action="{{ route('comments.destroy', $comment) }}" class="delete-form" data-confirm="{{ __('general.confirm.delete_comment') }}">
                             @csrf @method('DELETE')
                             <button class="btn btn-xs btn-ghost" style="color:var(--danger); border-color:var(--danger);">✕</button>
                         </form>
@@ -235,14 +235,14 @@
             <form method="POST" action="{{ route('comments.store', ['type' => 'destination', 'id' => $destination->id]) }}">
                 @csrf
                 <div class="form-group">
-                    <label>Your Name</label>
-                    <input type="text" name="author_name" placeholder="Who's commenting?" required>
+                    <label>{{ __('destinations.comments.your_name') }}</label>
+                    <input type="text" name="author_name" placeholder="{{ __('destinations.comments.name_placeholder') }}" required>
                 </div>
                 <div class="form-group">
-                    <label>Comment</label>
-                    <textarea name="content" placeholder="Share a tip, thought, or note..." required></textarea>
+                    <label>{{ __('destinations.comments.comment_label') }}</label>
+                    <textarea name="content" placeholder="{{ __('destinations.comments.comment_placeholder') }}" required></textarea>
                 </div>
-                <button type="submit" class="btn btn-navy btn-sm">Post Comment</button>
+                <button type="submit" class="btn btn-navy btn-sm">{{ __('destinations.comments.post_btn') }}</button>
             </form>
         </div>
     </div>
@@ -255,7 +255,7 @@
 <div class="modal-overlay" id="modal-edit-dest">
     <div class="modal">
         <div class="modal-header">
-            <h3>✏️ Edit Destination</h3>
+            <h3>✏️ {{ __('destinations.modal.edit_dest') }}</h3>
             <button class="modal-close" onclick="closeModal('modal-edit-dest')">×</button>
         </div>
         <form method="POST" action="{{ route('destinations.update', $destination) }}">
@@ -263,26 +263,26 @@
             <div class="modal-body">
                 <div class="form-row">
                     <div class="form-group">
-                        <label>City *</label>
+                        <label>{{ __('trips.modal.city') }}</label>
                         <input type="text" name="city" value="{{ $destination->city }}" required>
                     </div>
                     <div class="form-group">
-                        <label>Country *</label>
+                        <label>{{ __('trips.modal.country') }}</label>
                         <input type="text" name="country" value="{{ $destination->country }}" required>
                     </div>
                 </div>
                 <div class="form-group">
-                    <label>Flag Emoji</label>
+                    <label>{{ __('destinations.modal.flag_emoji') }}</label>
                     <input type="text" name="flag_emoji" value="{{ $destination->flag_emoji }}" maxlength="4" style="font-size: 1.4rem; text-align: center; width: 80px;">
                 </div>
                 <div class="form-group">
-                    <label>Notes</label>
+                    <label>{{ __('general.label.notes') }}</label>
                     <textarea name="notes">{{ $destination->notes }}</textarea>
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-ghost" onclick="closeModal('modal-edit-dest')">Cancel</button>
-                <button type="submit" class="btn btn-primary">Save</button>
+                <button type="button" class="btn btn-ghost" onclick="closeModal('modal-edit-dest')">{{ __('general.btn.cancel') }}</button>
+                <button type="submit" class="btn btn-primary">{{ __('general.btn.save') }}</button>
             </div>
         </form>
     </div>
@@ -292,7 +292,7 @@
 <div class="modal-overlay" id="modal-add-poi">
     <div class="modal">
         <div class="modal-header">
-            <h3>📍 Add Point of Interest</h3>
+            <h3>📍 {{ __('destinations.poi.modal_title') }}</h3>
             <button class="modal-close" onclick="closeModal('modal-add-poi')">×</button>
         </div>
         <form method="POST" action="{{ route('pois.store', $destination) }}">
@@ -300,11 +300,11 @@
             <div class="modal-body">
                 <div class="form-row">
                     <div class="form-group" style="flex:2">
-                        <label>Name *</label>
-                        <input type="text" name="name" placeholder="e.g. Eiffel Tower" required>
+                        <label>{{ __('destinations.poi.name') }}</label>
+                        <input type="text" name="name" placeholder="{{ __('destinations.poi.name_placeholder') }}" required>
                     </div>
                     <div class="form-group">
-                        <label>Category *</label>
+                        <label>{{ __('destinations.poi.category') }}</label>
                         <select name="category">
                             @foreach(\App\Models\PointOfInterest::categories() as $key => $cat)
                                 <option value="{{ $key }}">{{ $cat['icon'] }} {{ $cat['label'] }}</option>
@@ -313,21 +313,21 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label>Description</label>
-                    <textarea name="description" placeholder="Why visit? Tips?"></textarea>
+                    <label>{{ __('general.label.description') }}</label>
+                    <textarea name="description" placeholder="{{ __('destinations.poi.description_placeholder') }}"></textarea>
                 </div>
                 <div class="form-group">
-                    <label>Address</label>
-                    <input type="text" name="address" placeholder="Optional address">
+                    <label>{{ __('general.label.address') }}</label>
+                    <input type="text" name="address" placeholder="{{ __('destinations.poi.address_placeholder') }}">
                 </div>
                 <div class="form-group">
-                    <label>Link / URL</label>
+                    <label>{{ __('general.label.link_url') }}</label>
                     <input type="url" name="url" placeholder="https://...">
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-ghost" onclick="closeModal('modal-add-poi')">Cancel</button>
-                <button type="submit" class="btn btn-primary">Add POI</button>
+                <button type="button" class="btn btn-ghost" onclick="closeModal('modal-add-poi')">{{ __('general.btn.cancel') }}</button>
+                <button type="submit" class="btn btn-primary">{{ __('destinations.poi.add_btn') }}</button>
             </div>
         </form>
     </div>
@@ -337,7 +337,7 @@
 <div class="modal-overlay" id="modal-add-accommodation">
     <div class="modal">
         <div class="modal-header">
-            <h3>🏨 Add Accommodation</h3>
+            <h3>🏨 {{ __('destinations.accommodation.modal_title') }}</h3>
             <button class="modal-close" onclick="closeModal('modal-add-accommodation')">×</button>
         </div>
         <form method="POST" action="{{ route('accommodations.store', $destination) }}">
@@ -345,11 +345,11 @@
             <div class="modal-body">
                 <div class="form-row">
                     <div class="form-group" style="flex:2">
-                        <label>Name *</label>
-                        <input type="text" name="name" placeholder="Hotel / Airbnb name" required>
+                        <label>{{ __('general.label.name') }} *</label>
+                        <input type="text" name="name" placeholder="{{ __('destinations.accommodation.name_placeholder') }}" required>
                     </div>
                     <div class="form-group">
-                        <label>Type *</label>
+                        <label>{{ __('general.label.type') }} *</label>
                         <select name="type">
                             @foreach(\App\Models\Accommodation::types() as $key => $t)
                                 <option value="{{ $key }}">{{ $t['icon'] }} {{ $t['label'] }}</option>
@@ -358,41 +358,41 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label>Address</label>
+                    <label>{{ __('general.label.address') }}</label>
                     <input type="text" name="address">
                 </div>
                 <div class="form-row">
                     <div class="form-group">
-                        <label>Check-in Time</label>
-                        <input type="text" name="check_in" placeholder="e.g. 3:00 PM">
+                        <label>{{ __('destinations.accommodation.check_in') }}</label>
+                        <input type="text" name="check_in" placeholder="{{ __('destinations.accommodation.check_in_placeholder') }}">
                     </div>
                     <div class="form-group">
-                        <label>Check-out Time</label>
-                        <input type="text" name="check_out" placeholder="e.g. 11:00 AM">
+                        <label>{{ __('destinations.accommodation.check_out') }}</label>
+                        <input type="text" name="check_out" placeholder="{{ __('destinations.accommodation.check_out_placeholder') }}">
                     </div>
                 </div>
                 <div class="form-row">
                     <div class="form-group">
-                        <label>Confirmation Code</label>
+                        <label>{{ __('general.label.confirmation_code') }}</label>
                         <input type="text" name="confirmation_code">
                     </div>
                     <div class="form-group">
-                        <label>Price/Night</label>
+                        <label>{{ __('destinations.accommodation.price_night') }}</label>
                         <input type="number" name="price_per_night" step="0.01" placeholder="0.00">
                     </div>
                 </div>
                 <div class="form-group">
-                    <label>Booking URL</label>
+                    <label>{{ __('destinations.accommodation.booking_url') }}</label>
                     <input type="url" name="url" placeholder="https://...">
                 </div>
                 <div class="form-group">
-                    <label>Notes</label>
+                    <label>{{ __('general.label.notes') }}</label>
                     <textarea name="notes"></textarea>
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-ghost" onclick="closeModal('modal-add-accommodation')">Cancel</button>
-                <button type="submit" class="btn btn-primary">Add Accommodation</button>
+                <button type="button" class="btn btn-ghost" onclick="closeModal('modal-add-accommodation')">{{ __('general.btn.cancel') }}</button>
+                <button type="submit" class="btn btn-primary">{{ __('destinations.accommodation.add_btn') }}</button>
             </div>
         </form>
     </div>
@@ -402,7 +402,7 @@
 <div class="modal-overlay" id="modal-add-reservation">
     <div class="modal">
         <div class="modal-header">
-            <h3>🎫 Add Reservation</h3>
+            <h3>🎫 {{ __('destinations.reservation.modal_title') }}</h3>
             <button class="modal-close" onclick="closeModal('modal-add-reservation')">×</button>
         </div>
         <form method="POST" action="{{ route('reservations.store', $destination) }}">
@@ -410,11 +410,11 @@
             <div class="modal-body">
                 <div class="form-row">
                     <div class="form-group" style="flex:2">
-                        <label>Title *</label>
-                        <input type="text" name="title" placeholder="e.g. Dinner at Le Jules Verne" required>
+                        <label>{{ __('general.label.title') }} *</label>
+                        <input type="text" name="title" placeholder="{{ __('destinations.reservation.title_placeholder') }}" required>
                     </div>
                     <div class="form-group">
-                        <label>Type *</label>
+                        <label>{{ __('general.label.type') }} *</label>
                         <select name="type">
                             @foreach(\App\Models\Reservation::types() as $key => $t)
                                 <option value="{{ $key }}">{{ $t['icon'] }} {{ $t['label'] }}</option>
@@ -424,32 +424,32 @@
                 </div>
                 <div class="form-row">
                     <div class="form-group">
-                        <label>Date & Time</label>
+                        <label>{{ __('destinations.reservation.datetime') }}</label>
                         <input type="datetime-local" name="datetime">
                     </div>
                     <div class="form-group">
-                        <label>Venue</label>
+                        <label>{{ __('destinations.reservation.venue') }}</label>
                         <input type="text" name="venue">
                     </div>
                 </div>
                 <div class="form-row">
                     <div class="form-group">
-                        <label>Confirmation Code</label>
+                        <label>{{ __('general.label.confirmation_code') }}</label>
                         <input type="text" name="confirmation_code">
                     </div>
                     <div class="form-group">
-                        <label>Price</label>
+                        <label>{{ __('general.label.price') }}</label>
                         <input type="number" name="price" step="0.01" placeholder="0.00">
                     </div>
                 </div>
                 <div class="form-group">
-                    <label>Notes</label>
+                    <label>{{ __('general.label.notes') }}</label>
                     <textarea name="notes"></textarea>
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-ghost" onclick="closeModal('modal-add-reservation')">Cancel</button>
-                <button type="submit" class="btn btn-primary">Add Reservation</button>
+                <button type="button" class="btn btn-ghost" onclick="closeModal('modal-add-reservation')">{{ __('general.btn.cancel') }}</button>
+                <button type="submit" class="btn btn-primary">{{ __('destinations.reservation.add_btn') }}</button>
             </div>
         </form>
     </div>

@@ -40,7 +40,7 @@ class DayRouteController extends Controller
             ]);
         }
 
-        return back()->with('success', 'Route added!');
+        return back()->with('success', __('messages.route.added'));
     }
 
     public function update(Request $request, DayRoute $route)
@@ -75,12 +75,12 @@ class DayRouteController extends Controller
             ]);
         }
 
-        return back()->with('success', 'Route updated!');
+        return back()->with('success', __('messages.route.updated'));
     }
 
     public function destroy(DayRoute $route)
     {
         $route->delete();
-        return back()->with('success', 'Route removed.');
+        return back()->with('success', __('messages.route.removed'));
     }
 }

@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'EuroTrip Planner')</title>
+    <title>@yield('title', __('general.app_name'))</title>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -35,7 +35,7 @@
     <div class="auth-wrap">
         <div class="auth-brand">
             <h1>EuroTrip ✈</h1>
-            <p>Plan your perfect European adventure</p>
+            <p>{{ __('auth.guest.tagline') }}</p>
         </div>
         @if($errors->any())
             <div class="alert">{{ $errors->first() }}</div>

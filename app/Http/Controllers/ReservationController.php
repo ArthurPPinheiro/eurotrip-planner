@@ -23,7 +23,7 @@ class ReservationController extends Controller
         ]);
 
         $destination->reservations()->create($data);
-        return back()->with('success', 'Reservation added!');
+        return back()->with('success', __('messages.reservation.added'));
     }
 
     public function update(Request $request, Reservation $reservation)
@@ -41,12 +41,12 @@ class ReservationController extends Controller
         ]);
 
         $reservation->update($data);
-        return back()->with('success', 'Updated!');
+        return back()->with('success', __('messages.reservation.updated'));
     }
 
     public function destroy(Reservation $reservation)
     {
         $reservation->delete();
-        return back()->with('success', 'Removed.');
+        return back()->with('success', __('messages.reservation.removed'));
     }
 }

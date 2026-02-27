@@ -18,7 +18,7 @@ class DayController extends Controller
         $data['order'] = $trip->days()->count();
         $trip->days()->create($data);
 
-        return back()->with('success', 'Day added!');
+        return back()->with('success', __('messages.day.added'));
     }
 
     public function update(Request $request, Day $day)
@@ -29,13 +29,13 @@ class DayController extends Controller
         ]);
 
         $day->update($data);
-        return back()->with('success', 'Day updated!');
+        return back()->with('success', __('messages.day.updated'));
     }
 
     public function destroy(Day $day)
     {
         $trip = $day->trip;
         $day->delete();
-        return back()->with('success', 'Day removed.');
+        return back()->with('success', __('messages.day.removed'));
     }
 }

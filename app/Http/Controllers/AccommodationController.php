@@ -24,7 +24,7 @@ class AccommodationController extends Controller
         ]);
 
         $destination->accommodations()->create($data);
-        return back()->with('success', 'Accommodation added!');
+        return back()->with('success', __('messages.accommodation.added'));
     }
 
     public function update(Request $request, Accommodation $accommodation)
@@ -43,12 +43,12 @@ class AccommodationController extends Controller
         ]);
 
         $accommodation->update($data);
-        return back()->with('success', 'Updated!');
+        return back()->with('success', __('messages.accommodation.updated'));
     }
 
     public function destroy(Accommodation $accommodation)
     {
         $accommodation->delete();
-        return back()->with('success', 'Removed.');
+        return back()->with('success', __('messages.accommodation.removed'));
     }
 }

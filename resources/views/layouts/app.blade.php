@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'EuroTrip Planner')</title>
+    <title>@yield('title', __('general.app_name'))</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
@@ -106,14 +106,14 @@
         <a href="{{ route('trips.index') }}" class="nav-brand">Euro<span>Trip</span> ✈</a>
         @auth
         <div class="nav-links">
-            <a href="{{ route('trips.index') }}">My Trips</a>
+            <a href="{{ route('trips.index') }}">{{ __('general.nav.my_trips') }}</a>
         </div>
         <div class="nav-user">
             <div class="avatar" style="background: {{ auth()->user()->avatar_color }}">{{ auth()->user()->initials() }}</div>
-            <span style="color:#ccc; font-size:0.85rem">{{ auth()->user()->name }}</span>
+            <span class="hidden sm:inline" style="color:#ccc; font-size:0.85rem">{{ auth()->user()->name }}</span>
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
-                <button type="submit" class="btn-logout">Logout</button>
+                <button type="submit" class="btn-logout">{{ __('general.nav.logout') }}</button>
             </form>
         </div>
         @endauth
@@ -136,6 +136,13 @@
         function closeModal(id) { document.getElementById(id).classList.remove('open'); }
         document.addEventListener('keydown', e => {
             if (e.key === 'Escape') document.querySelectorAll('.modal-backdrop.open').forEach(m => m.classList.remove('open'));
+        });
+        document.addEventListener('submit', function(e) {
+            var msg = e.target.dataset.confirm;
+            if (msg && !confirm(msg)) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
         });
     </script>
     @stack('scripts')

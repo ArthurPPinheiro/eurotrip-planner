@@ -25,12 +25,12 @@ class CommentController extends Controller
         $model = $modelMap[$type]::findOrFail($id);
         $model->comments()->create($data);
 
-        return back()->with('success', 'Comment added!');
+        return back()->with('success', __('messages.comment.added'));
     }
 
     public function destroy(Comment $comment)
     {
         $comment->delete();
-        return back()->with('success', 'Comment removed.');
+        return back()->with('success', __('messages.comment.removed'));
     }
 }

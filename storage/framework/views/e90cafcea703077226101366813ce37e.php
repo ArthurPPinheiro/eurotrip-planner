@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<?php echo e(str_replace('_', '-', app()->getLocale())); ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo $__env->yieldContent('title', 'EuroTrip Planner'); ?></title>
+    <title><?php echo $__env->yieldContent('title', __('general.app_name')); ?></title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
@@ -106,14 +106,14 @@
         <a href="<?php echo e(route('trips.index')); ?>" class="nav-brand">Euro<span>Trip</span> ✈</a>
         <?php if(auth()->guard()->check()): ?>
         <div class="nav-links">
-            <a href="<?php echo e(route('trips.index')); ?>">My Trips</a>
+            <a href="<?php echo e(route('trips.index')); ?>"><?php echo e(__('general.nav.my_trips')); ?></a>
         </div>
         <div class="nav-user">
             <div class="avatar" style="background: <?php echo e(auth()->user()->avatar_color); ?>"><?php echo e(auth()->user()->initials()); ?></div>
-            <span style="color:#ccc; font-size:0.85rem"><?php echo e(auth()->user()->name); ?></span>
+            <span class="hidden sm:inline" style="color:#ccc; font-size:0.85rem"><?php echo e(auth()->user()->name); ?></span>
             <form method="POST" action="<?php echo e(route('logout')); ?>">
                 <?php echo csrf_field(); ?>
-                <button type="submit" class="btn-logout">Logout</button>
+                <button type="submit" class="btn-logout"><?php echo e(__('general.nav.logout')); ?></button>
             </form>
         </div>
         <?php endif; ?>
@@ -137,6 +137,13 @@
         function closeModal(id) { document.getElementById(id).classList.remove('open'); }
         document.addEventListener('keydown', e => {
             if (e.key === 'Escape') document.querySelectorAll('.modal-backdrop.open').forEach(m => m.classList.remove('open'));
+        });
+        document.addEventListener('submit', function(e) {
+            var msg = e.target.dataset.confirm;
+            if (msg && !confirm(msg)) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
         });
     </script>
     <?php echo $__env->yieldPushContent('scripts'); ?>

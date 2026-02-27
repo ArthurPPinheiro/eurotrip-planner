@@ -38,7 +38,7 @@ class AuthController extends Controller
             $request->session()->regenerate();
             return redirect()->intended(route('trips.index'));
         }
-        return back()->withErrors(['email' => 'Invalid credentials.']);
+        return back()->withErrors(['email' => __('messages.auth.invalid_credentials')]);
     }
 
     public function logout(Request $request) {

@@ -60,7 +60,7 @@ class TripController extends Controller
 
         return redirect()
             ->route("trips.show", $trip)
-            ->with("success", "Trip created!");
+            ->with("success", __("messages.trip.created"));
     }
 
     public function show(Trip $trip)
@@ -90,7 +90,7 @@ class TripController extends Controller
         );
         return redirect()
             ->route("trips.show", $trip)
-            ->with("success", "Trip updated!");
+            ->with("success", __("messages.trip.updated"));
     }
 
     public function destroy(Trip $trip)
@@ -99,7 +99,7 @@ class TripController extends Controller
         $trip->delete();
         return redirect()
             ->route("trips.index")
-            ->with("success", "Trip deleted.");
+            ->with("success", __("messages.trip.deleted"));
     }
 
     public function join(Request $request)
@@ -114,7 +114,7 @@ class TripController extends Controller
         }
         return redirect()
             ->route("trips.show", $trip)
-            ->with("success", "Welcome to the trip!");
+            ->with("success", __("messages.trip.joined"));
     }
 
     public function addDay(Trip $trip)
@@ -130,6 +130,6 @@ class TripController extends Controller
             "date" => $newDate->toDateString(),
             "day_number" => $lastDay + 1,
         ]);
-        return back()->with("success", "Day added!");
+        return back()->with("success", __("messages.day.added"));
     }
 }

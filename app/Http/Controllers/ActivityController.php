@@ -28,11 +28,11 @@ class ActivityController extends Controller
             'order' => $order,
         ]));
 
-        return back()->with('success', ucfirst($request->type) . ' added!');
+        return back()->with('success', __('messages.activity.added', ['type' => __('trips.activity_type.' . $request->type)]));
     }
 
     public function destroy(Activity $activity) {
         $activity->delete();
-        return back()->with('success', 'Removed.');
+        return back()->with('success', __('messages.activity.removed'));
     }
 }

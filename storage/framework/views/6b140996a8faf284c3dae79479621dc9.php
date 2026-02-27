@@ -8,16 +8,16 @@
             <h1 style="font-family:'Playfair Display',serif;font-size:2rem;margin-bottom:0.4rem"><?php echo e($trip->name); ?></h1>
             <?php if($trip->description): ?><p style="opacity:0.7;font-size:0.9rem"><?php echo e($trip->description); ?></p><?php endif; ?>
             <div class="flex gap-2 mt-2" style="font-size:0.85rem;opacity:0.8;flex-wrap:wrap">
-                <?php if($trip->start_date): ?><span>📅 <?php echo e($trip->start_date->format('M d')); ?> – <?php echo e($trip->end_date?->format('M d, Y') ?? '?'); ?></span><?php endif; ?>
-                <span>🗓️ <?php echo e($trip->days->count()); ?> days planned</span>
-                <span>👥 <?php echo e($trip->members->count()); ?> travellers</span>
-                <span>⏰ In <?php echo e($trip->getTimeUntilTrip()); ?> days</span>
+                <?php if($trip->start_date): ?><span>📅 <?php echo e($trip->start_date->translatedFormat('M d')); ?> – <?php echo e($trip->end_date?->translatedFormat('M d, Y') ?? '?'); ?></span><?php endif; ?>
+                <span>🗓️ <?php echo e(__('trips.show.days_planned', ['count' => $trip->days->count()])); ?></span>
+                <span>👥 <?php echo e(__('trips.show.travellers', ['count' => $trip->members->count()])); ?></span>
+                <span>⏰ <?php echo e(__('trips.show.in_days', ['count' => $trip->getTimeUntilTrip()])); ?></span>
 
             </div>
         </div>
         <div class="flex gap-1" style="align-items:flex-start">
-            <a href="<?php echo e(route('trips.edit', $trip)); ?>" class="btn btn-sm" style="background:rgba(255,255,255,0.15);color:white;border:1px solid rgba(255,255,255,0.25)">✏️ Edit</a>
-            <a href="<?php echo e(route('trips.index')); ?>" class="btn btn-sm btn-ghost" style="color:rgba(255,255,255,0.6)">← Back</a>
+            <a href="<?php echo e(route('trips.edit', $trip)); ?>" class="btn btn-sm" style="background:rgba(255,255,255,0.15);color:white;border:1px solid rgba(255,255,255,0.25)"><?php echo e(__('trips.show.edit')); ?></a>
+            <a href="<?php echo e(route('trips.index')); ?>" class="btn btn-sm btn-ghost" style="color:rgba(255,255,255,0.6)"><?php echo e(__('trips.show.back')); ?></a>
         </div>
     </div>
     <div class="flex-between mt-3" style="align-items:center">
@@ -27,20 +27,20 @@
             <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
         </div>
         <div style="background:rgba(255,255,255,0.1);border-radius:8px;padding:0.4rem 0.875rem;font-size:0.8rem;color:rgba(255,255,255,0.8)">
-            Invite code: <strong style="letter-spacing:0.1em;color:var(--gold-light)"><?php echo e($trip->invite_code); ?></strong>
+            <?php echo e(__('general.label.invite_code')); ?>: <strong style="letter-spacing:0.1em;color:var(--gold-light)"><?php echo e($trip->invite_code); ?></strong>
         </div>
     </div>
 </div>
 
 <!-- Tabs -->
 <div class="flex gap-1 mb-3">
-    <a href="<?php echo e(route('trips.show', $trip)); ?>" class="btn btn-primary btn-sm">🗺️ Itinerary</a>
-    <a href="<?php echo e(route('documents.index', $trip)); ?>" class="btn btn-outline btn-sm">📂 Documents</a>
+    <a href="<?php echo e(route('trips.show', $trip)); ?>" class="btn btn-primary btn-sm">🗺️ <?php echo e(__('trips.show.itinerary')); ?></a>
+    <a href="<?php echo e(route('documents.index', $trip)); ?>" class="btn btn-outline btn-sm">📂 <?php echo e(__('trips.show.documents')); ?></a>
 
     <!-- Add Day -->
     <form method="POST" action="<?php echo e(route('trips.addDay', $trip)); ?>">
         <?php echo csrf_field(); ?>
-        <button type="submit" class="btn btn-gold">+ Add Day</button>
+        <button type="submit" class="btn btn-gold"><?php echo e(__('trips.show.add_day')); ?></button>
     </form>
 </div>
 
@@ -119,7 +119,7 @@
     <div class="card">
         <div class="empty-state">
             <span class="emoji">🗓️</span>
-            <p>No days yet — click "Add Day" to start building your itinerary!</p>
+            <p><?php echo e(__('trips.show.no_days')); ?></p>
         </div>
     </div>
 <?php else: ?>
@@ -132,11 +132,11 @@
             <span class="accordion-trigger <?php echo e($loop->first ? 'open' : ''); ?>" onclick="toggleAccordion(<?php echo e($day->id); ?>)">
                 <div style="flex:1;min-width:0">
                     <div style="font-family:'Playfair Display',serif;font-size:1.05rem;margin-bottom:0.25rem">
-                        <?php echo e($day->date->format('l, M d')); ?><?php echo e($dayIsPast ? ' · 🏁' : ''); ?>
+                        <?php echo e($day->date->translatedFormat('l, M d')); ?><?php echo e($dayIsPast ? ' · 🏁' : ''); ?>
 
                     </div>
                     <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap">
-                        <span style="font-size:0.78rem;opacity:0.65">Day <?php echo e($day->day_number); ?><?php if($day->title): ?> · <?php echo e($day->title); ?><?php endif; ?></span>
+                        <span style="font-size:0.78rem;opacity:0.65"><?php echo e(__('trips.show.day_number', ['number' => $day->day_number])); ?><?php if($day->title): ?> · <?php echo e($day->title); ?><?php endif; ?></span>
                         <?php if($day->flights->count() || $day->destinations->count()): ?>
                             <div class="day-summary-pills">
                                 <?php $__currentLoopData = $day->flights; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $fl): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
@@ -147,7 +147,7 @@
                                 <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                             </div>
                         <?php else: ?>
-                            <span style="font-size:0.78rem;opacity:0.45;font-style:italic">No cities yet</span>
+                            <span style="font-size:0.78rem;opacity:0.45;font-style:italic"><?php echo e(__('trips.show.no_cities')); ?></span>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -158,10 +158,10 @@
                         </span>
                     <?php endif; ?>
                     <?php if($day->destinations->flatMap->activities->count()): ?>
-                        <span style="font-size:0.75rem;opacity:0.6"><?php echo e($day->destinations->flatMap->activities->count()); ?> items</span>
+                        <span style="font-size:0.75rem;opacity:0.6"><?php echo e(__('general.label.items', ['count' => $day->destinations->flatMap->activities->count()])); ?></span>
                     <?php endif; ?>
                     <form method="POST" action="<?php echo e(route('days.destroy', $day)); ?>"
-                          onsubmit="event.stopPropagation(); return confirm('Delete Day <?php echo e($day->day_number); ?> and all its cities?')"
+                          data-confirm="<?php echo e(__('trips.show.confirm_delete_day', ['number' => $day->day_number])); ?>" onsubmit="event.stopPropagation()"
                           onclick="event.stopPropagation()"
                           class="day-delete-form">
                         <?php echo csrf_field(); ?> <?php echo method_field('DELETE'); ?>
@@ -185,7 +185,7 @@
                             $rh = intdiv($day->route->total_duration_minutes ?? 0, 60);
                             $rm = ($day->route->total_duration_minutes ?? 0) % 60;
                             $modeIcon = ['car'=>'🚗','bus'=>'🚌','train'=>'🚂'][$day->route->transport_mode] ?? '🚗';
-                            $modeLabel = ['car'=>'Car','bus'=>'Bus','train'=>'Train'][$day->route->transport_mode] ?? 'Car';
+                            $modeLabel = ['car'=>__('routes.mode.car'),'bus'=>__('routes.mode.bus'),'train'=>__('routes.mode.train')][$day->route->transport_mode] ?? __('routes.mode.car');
                         ?>
                         <div class="route-card">
                             <div class="route-summary-bar">
@@ -214,10 +214,10 @@
                                     data-stops="<?php echo e(json_encode($routeStops)); ?>"
                                     data-mode="<?php echo e($day->route->transport_mode); ?>"
                                     onclick="openRouteModalFromEl(this)"
-                                    class="btn btn-sm btn-outline">✏️ Edit Route</button>
-                                <form method="POST" action="<?php echo e(route('routes.destroy', $day->route)); ?>" onsubmit="return confirm('Remove this route?')">
+                                    class="btn btn-sm btn-outline"><?php echo e(__('routes.edit_route')); ?></button>
+                                <form method="POST" action="<?php echo e(route('routes.destroy', $day->route)); ?>" data-confirm="<?php echo e(__('routes.confirm_remove')); ?>">
                                     <?php echo csrf_field(); ?> <?php echo method_field('DELETE'); ?>
-                                    <button class="btn btn-sm btn-ghost" style="color:var(--danger)">✕ Remove Route</button>
+                                    <button class="btn btn-sm btn-ghost" style="color:var(--danger)"><?php echo e(__('routes.remove_route')); ?></button>
                                 </form>
                             </div>
                         </div>
@@ -226,14 +226,14 @@
                             <button
                                 data-day="<?php echo e($day->id); ?>"
                                 onclick="openRouteModalFromEl(this)"
-                                class="btn btn-sm btn-outline">🗺️ Add Route</button>
+                                class="btn btn-sm btn-outline"><?php echo e(__('routes.add_route')); ?></button>
                         </div>
                     <?php endif; ?>
 
                     
                     <?php $__currentLoopData = $day->flights; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $flight): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                         <?php
-                            $cabinLabels = ['economy'=>'Economy','premium_economy'=>'Premium Economy','business'=>'Business','first'=>'First Class'];
+                            $cabinLabels = ['economy'=>__('flights.cabin.economy'),'premium_economy'=>__('flights.cabin.premium_economy'),'business'=>__('flights.cabin.business'),'first'=>__('flights.cabin.first')];
                             $flDurH = intdiv($flight->duration_minutes ?? 0, 60);
                             $flDurM = ($flight->duration_minutes ?? 0) % 60;
                         ?>
@@ -247,8 +247,8 @@
                                 <div class="flex gap-1">
                                     <button
                                         onclick="openFlightModal(<?php echo e($day->id); ?>, <?php echo e($flight->id); ?>)"
-                                        class="btn btn-sm" style="background:rgba(255,255,255,0.15);color:white;border:1px solid rgba(255,255,255,0.25)">✏️ Edit</button>
-                                    <form method="POST" action="<?php echo e(route('flights.destroy', $flight)); ?>" onsubmit="return confirm('Remove this flight?')" onclick="event.stopPropagation()">
+                                        class="btn btn-sm" style="background:rgba(255,255,255,0.15);color:white;border:1px solid rgba(255,255,255,0.25)"><?php echo e(__('trips.show.edit')); ?></button>
+                                    <form method="POST" action="<?php echo e(route('flights.destroy', $flight)); ?>" data-confirm="<?php echo e(__('flights.confirm.remove_flight')); ?>" onclick="event.stopPropagation()">
                                         <?php echo csrf_field(); ?> <?php echo method_field('DELETE'); ?>
                                         <button class="btn btn-sm" style="background:rgba(193,68,14,0.3);color:white;border:1px solid rgba(193,68,14,0.5)">✕</button>
                                     </form>
@@ -291,13 +291,14 @@
 
                     
                     <div style="display:flex;justify-content:flex-end;gap:0.5rem;margin-bottom:1rem">
-                        <button onclick="openFlightModal(<?php echo e($day->id); ?>)" class="btn btn-sm btn-outline" style="border-color:#1e40af;color:#1e40af">✈ Add Flight</button>
-                        <button onclick="openModal('dest-modal-<?php echo e($day->id); ?>')" class="btn btn-sm btn-gold">+ Add City</button>
+                        <button onclick="openFlightModal(<?php echo e($day->id); ?>)" class="btn btn-sm btn-outline" style="border-color:#1e40af;color:#1e40af"><?php echo e(__('trips.show.add_flight')); ?></button>
+                        <button onclick="openModal('dest-modal-<?php echo e($day->id); ?>')" class="btn btn-sm btn-gold"><?php echo e(__('trips.show.add_city')); ?></button>
                     </div>
 
                     <?php if($day->destinations->isEmpty()): ?>
                         <div style="text-align:center;padding:1.5rem 0;color:var(--muted);font-size:0.9rem">
-                            No cities added yet for this day.
+                            <?php echo e(__('trips.show.no_cities_day')); ?>
+
                         </div>
                     <?php else: ?>
                         <div style="display:flex;flex-direction:column;gap:1rem">
@@ -312,8 +313,8 @@
                                         </div>
                                     </div>
                                     <div class="flex gap-1">
-                                        <button onclick="openModal('act-modal-<?php echo e($dest->id); ?>')" class="btn btn-sm btn-primary">+ Add Item</button>
-                                        <form method="POST" action="<?php echo e(route('destinations.destroy', $dest)); ?>" onsubmit="return confirm('Remove <?php echo e($dest->city); ?>?')">
+                                        <button onclick="openModal('act-modal-<?php echo e($dest->id); ?>')" class="btn btn-sm btn-primary"><?php echo e(__('trips.show.add_item')); ?></button>
+                                        <form method="POST" action="<?php echo e(route('destinations.destroy', $dest)); ?>" data-confirm="<?php echo e(__('trips.show.confirm_remove_city', ['city' => $dest->city])); ?>">
                                             <?php echo csrf_field(); ?> <?php echo method_field('DELETE'); ?>
                                             <button class="btn btn-sm btn-ghost" style="color:var(--danger)">✕</button>
                                         </form>
@@ -335,10 +336,10 @@
                                                     <?php if($act->price): ?><span class="badge badge-green"><?php echo e($act->currency); ?> <?php echo e(number_format($act->price, 2)); ?></span><?php endif; ?>
                                                     <?php if($act->link): ?><a href="<?php echo e($act->link); ?>" target="_blank" class="text-sm" style="color:var(--accent)">🔗 Link</a><?php endif; ?>
                                                 </div>
-                                                <div class="text-sm text-muted mt-1">Added by <?php echo e($act->author->name); ?></div>
+                                                <div class="text-sm text-muted mt-1"><?php echo e(__('general.label.added_by', ['name' => $act->author->name])); ?></div>
                                             </div>
                                         </div>
-                                        <form method="POST" action="<?php echo e(route('activities.destroy', $act)); ?>" onsubmit="return confirm('Remove this?')">
+                                        <form method="POST" action="<?php echo e(route('activities.destroy', $act)); ?>" data-confirm="<?php echo e(__('trips.show.confirm_remove_this')); ?>">
                                             <?php echo csrf_field(); ?> <?php echo method_field('DELETE'); ?>
                                             <button class="btn btn-sm btn-ghost" style="color:var(--danger);padding:0.2rem 0.5rem">✕</button>
                                         </form>
@@ -346,7 +347,7 @@
                                     <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                 </div>
                                 <?php else: ?>
-                                    <div style="padding:0.875rem 1.25rem;font-size:0.85rem;color:var(--muted);font-style:italic">No items yet — add a hotel, POI, or note.</div>
+                                    <div style="padding:0.875rem 1.25rem;font-size:0.85rem;color:var(--muted);font-style:italic"><?php echo e(__('trips.show.no_items')); ?></div>
                                 <?php endif; ?>
                             </div>
 
@@ -354,51 +355,51 @@
                             <div id="act-modal-<?php echo e($dest->id); ?>" class="modal-backdrop">
                                 <div class="modal">
                                     <div class="modal-header">
-                                        <h3>Add to <?php echo e($dest->city); ?></h3>
+                                        <h3><?php echo e(__('trips.modal.add_to_city', ['city' => $dest->city])); ?></h3>
                                         <button class="modal-close" onclick="closeModal('act-modal-<?php echo e($dest->id); ?>')">×</button>
                                     </div>
                                     <div class="modal-body">
                                         <form method="POST" action="<?php echo e(route('activities.store', $dest)); ?>">
                                             <?php echo csrf_field(); ?>
                                             <div class="form-group">
-                                                <label class="form-label">Type</label>
+                                                <label class="form-label"><?php echo e(__('general.label.type')); ?></label>
                                                 <select name="type" class="form-control" required>
-                                                    <option value="poi">📍 Point of Interest</option>
-                                                    <option value="hotel">🏨 Hotel / Accommodation</option>
-                                                    <option value="reservation">🎟️ Reservation</option>
-                                                    <option value="comment">💬 Comment / Note</option>
+                                                    <option value="poi">📍 <?php echo e(__('trips.activity_type.poi')); ?></option>
+                                                    <option value="hotel">🏨 <?php echo e(__('trips.activity_type.hotel')); ?></option>
+                                                    <option value="reservation">🎟️ <?php echo e(__('trips.activity_type.reservation')); ?></option>
+                                                    <option value="comment">💬 <?php echo e(__('trips.activity_type.comment')); ?></option>
                                                 </select>
                                             </div>
                                             <div class="form-group">
-                                                <label class="form-label">Title *</label>
-                                                <input type="text" name="title" class="form-control" required placeholder="e.g. Eiffel Tower">
+                                                <label class="form-label"><?php echo e(__('trips.modal.title_label')); ?></label>
+                                                <input type="text" name="title" class="form-control" required placeholder="<?php echo e(__('trips.modal.title_placeholder')); ?>">
                                             </div>
                                             <div class="form-group">
-                                                <label class="form-label">Description</label>
-                                                <textarea name="description" class="form-control" placeholder="Any details..."></textarea>
+                                                <label class="form-label"><?php echo e(__('general.label.description')); ?></label>
+                                                <textarea name="description" class="form-control" placeholder="<?php echo e(__('trips.modal.description_placeholder')); ?>"></textarea>
                                             </div>
                                             <div class="grid-2">
                                                 <div class="form-group">
-                                                    <label class="form-label">Time</label>
-                                                    <input type="text" name="time" class="form-control" placeholder="e.g. 10:00 AM">
+                                                    <label class="form-label"><?php echo e(__('general.label.time')); ?></label>
+                                                    <input type="text" name="time" class="form-control" placeholder="<?php echo e(__('trips.modal.time_placeholder')); ?>">
                                                 </div>
                                                 <div class="form-group">
-                                                    <label class="form-label">Price</label>
+                                                    <label class="form-label"><?php echo e(__('general.label.price')); ?></label>
                                                     <input type="number" name="price" class="form-control" placeholder="0.00" step="0.01">
                                                 </div>
                                             </div>
                                             <div class="form-group">
-                                                <label class="form-label">Address</label>
-                                                <input type="text" name="address" class="form-control" placeholder="Street, City...">
+                                                <label class="form-label"><?php echo e(__('general.label.address')); ?></label>
+                                                <input type="text" name="address" class="form-control" placeholder="<?php echo e(__('trips.modal.address_placeholder')); ?>">
                                             </div>
                                             <div class="form-group">
-                                                <label class="form-label">Link / URL</label>
+                                                <label class="form-label"><?php echo e(__('general.label.link_url')); ?></label>
                                                 <input type="url" name="link" class="form-control" placeholder="https://...">
                                             </div>
                                             <input type="hidden" name="currency" value="EUR">
                                             <div class="flex gap-1">
-                                                <button type="button" onclick="closeModal('act-modal-<?php echo e($dest->id); ?>')" class="btn btn-outline">Cancel</button>
-                                                <button type="submit" class="btn btn-primary">Add Item</button>
+                                                <button type="button" onclick="closeModal('act-modal-<?php echo e($dest->id); ?>')" class="btn btn-outline"><?php echo e(__('general.btn.cancel')); ?></button>
+                                                <button type="submit" class="btn btn-primary"><?php echo e(__('trips.modal.add_item_btn')); ?></button>
                                             </div>
                                         </form>
                                     </div>
@@ -415,7 +416,7 @@
         <div id="dest-modal-<?php echo e($day->id); ?>" class="modal-backdrop">
             <div class="modal">
                 <div class="modal-header">
-                    <h3>Add City — Day <?php echo e($day->day_number); ?></h3>
+                    <h3><?php echo e(__('trips.modal.add_city_day', ['number' => $day->day_number])); ?></h3>
                     <button class="modal-close" onclick="closeModal('dest-modal-<?php echo e($day->id); ?>')">×</button>
                 </div>
                 <div class="modal-body">
@@ -423,21 +424,21 @@
                         <?php echo csrf_field(); ?>
                         <div class="grid-2">
                             <div class="form-group">
-                                <label class="form-label">City *</label>
-                                <input type="text" name="city" class="form-control" required placeholder="Paris">
+                                <label class="form-label"><?php echo e(__('trips.modal.city')); ?></label>
+                                <input type="text" name="city" class="form-control" required placeholder="<?php echo e(__('trips.modal.city_placeholder')); ?>">
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Country *</label>
-                                <input type="text" name="country" class="form-control" required placeholder="France">
+                                <label class="form-label"><?php echo e(__('trips.modal.country')); ?></label>
+                                <input type="text" name="country" class="form-control" required placeholder="<?php echo e(__('trips.modal.country_placeholder')); ?>">
                             </div>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Emoji Flag</label>
+                            <label class="form-label"><?php echo e(__('trips.modal.emoji_flag')); ?></label>
                             <input type="text" name="emoji" class="form-control" placeholder="🇫🇷" style="font-size:1.4rem;width:80px;text-align:center">
                         </div>
                         <div class="flex gap-1">
-                            <button type="button" onclick="closeModal('dest-modal-<?php echo e($day->id); ?>')" class="btn btn-outline">Cancel</button>
-                            <button type="submit" class="btn btn-primary">Add City</button>
+                            <button type="button" onclick="closeModal('dest-modal-<?php echo e($day->id); ?>')" class="btn btn-outline"><?php echo e(__('general.btn.cancel')); ?></button>
+                            <button type="submit" class="btn btn-primary"><?php echo e(__('trips.modal.add_city_btn')); ?></button>
                         </div>
                     </form>
                 </div>
@@ -448,7 +449,7 @@
         <div id="route-modal-<?php echo e($day->id); ?>" class="modal-backdrop">
             <div class="modal" style="max-width:640px">
                 <div class="modal-header">
-                    <h3>Route — Day <?php echo e($day->day_number); ?></h3>
+                    <h3><?php echo e(__('routes.modal_title', ['number' => $day->day_number])); ?></h3>
                     <button class="modal-close" onclick="closeModal('route-modal-<?php echo e($day->id); ?>')">×</button>
                 </div>
                 <div class="modal-body">
@@ -460,30 +461,30 @@
 
                         
                         <div class="form-group">
-                            <label class="form-label">Transport Mode</label>
+                            <label class="form-label"><?php echo e(__('routes.transport_mode')); ?></label>
                             <div class="flex gap-1" style="flex-wrap:wrap">
                                 <button type="button" class="transport-btn" data-mode="car"
-                                        onclick="setTransport(<?php echo e($day->id); ?>, 'car')">🚗 Car</button>
+                                        onclick="setTransport(<?php echo e($day->id); ?>, 'car')">🚗 <?php echo e(__('routes.mode.car')); ?></button>
                                 <button type="button" class="transport-btn" data-mode="bus"
-                                        onclick="setTransport(<?php echo e($day->id); ?>, 'bus')">🚌 Bus</button>
+                                        onclick="setTransport(<?php echo e($day->id); ?>, 'bus')">🚌 <?php echo e(__('routes.mode.bus')); ?></button>
                                 <button type="button" class="transport-btn" data-mode="train"
-                                        onclick="setTransport(<?php echo e($day->id); ?>, 'train')">🚂 Train</button>
+                                        onclick="setTransport(<?php echo e($day->id); ?>, 'train')">🚂 <?php echo e(__('routes.mode.train')); ?></button>
                             </div>
                             <input type="hidden" name="transport_mode" id="transport-input-<?php echo e($day->id); ?>" value="car">
                         </div>
 
                         
                         <div class="form-group">
-                            <label class="form-label">Stops <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:0.8rem">(min 2 — type city then click away to geocode)</span></label>
+                            <label class="form-label"><?php echo e(__('routes.stops_label')); ?> <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:0.8rem"><?php echo e(__('routes.stops_hint')); ?></span></label>
                             <div id="stops-list-<?php echo e($day->id); ?>" style="display:flex;flex-direction:column;gap:0.5rem"></div>
-                            <button type="button" onclick="addStop(<?php echo e($day->id); ?>)" class="btn btn-sm btn-ghost" style="margin-top:0.5rem">+ Add Stop</button>
+                            <button type="button" onclick="addStop(<?php echo e($day->id); ?>)" class="btn btn-sm btn-ghost" style="margin-top:0.5rem"><?php echo e(__('routes.add_stop')); ?></button>
                         </div>
 
                         
                         <div class="form-group">
                             <div id="route-preview-<?php echo e($day->id); ?>" class="route-map-preview"></div>
                             <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap">
-                                <button type="button" onclick="calculateRoute(<?php echo e($day->id); ?>)" class="btn btn-sm btn-outline">🔄 Calculate Route</button>
+                                <button type="button" onclick="calculateRoute(<?php echo e($day->id); ?>)" class="btn btn-sm btn-outline"><?php echo e(__('routes.calculate_route')); ?></button>
                                 <span id="route-calc-summary-<?php echo e($day->id); ?>" style="font-size:0.85rem;color:var(--muted)"></span>
                             </div>
                         </div>
@@ -492,8 +493,8 @@
                         <input type="hidden" name="total_duration_minutes" id="total-duration-<?php echo e($day->id); ?>">
 
                         <div class="flex gap-1">
-                            <button type="button" onclick="closeModal('route-modal-<?php echo e($day->id); ?>')" class="btn btn-outline">Cancel</button>
-                            <button type="submit" class="btn btn-primary">Save Route</button>
+                            <button type="button" onclick="closeModal('route-modal-<?php echo e($day->id); ?>')" class="btn btn-outline"><?php echo e(__('general.btn.cancel')); ?></button>
+                            <button type="submit" class="btn btn-primary"><?php echo e(__('routes.save_route')); ?></button>
                         </div>
                     </form>
                 </div>
@@ -505,7 +506,7 @@
         <div id="flight-edit-modal-<?php echo e($flight->id); ?>" class="modal-backdrop">
             <div class="modal" style="max-width:580px">
                 <div class="modal-header">
-                    <h3>Edit Flight — Day <?php echo e($day->day_number); ?></h3>
+                    <h3><?php echo e(__('flights.modal.edit_title', ['number' => $day->day_number])); ?></h3>
                     <button class="modal-close" onclick="closeModal('flight-edit-modal-<?php echo e($flight->id); ?>')">×</button>
                 </div>
                 <div class="modal-body">
@@ -513,8 +514,8 @@
                         <?php echo csrf_field(); ?> <?php echo method_field('PUT'); ?>
                         <?php echo $__env->make('trips._flight_form', ['f' => $flight], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
                         <div class="flex gap-1">
-                            <button type="button" onclick="closeModal('flight-edit-modal-<?php echo e($flight->id); ?>')" class="btn btn-outline">Cancel</button>
-                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                            <button type="button" onclick="closeModal('flight-edit-modal-<?php echo e($flight->id); ?>')" class="btn btn-outline"><?php echo e(__('general.btn.cancel')); ?></button>
+                            <button type="submit" class="btn btn-primary"><?php echo e(__('general.btn.save_changes')); ?></button>
                         </div>
                     </form>
                 </div>
@@ -525,7 +526,7 @@
         <div id="flight-add-modal-<?php echo e($day->id); ?>" class="modal-backdrop">
             <div class="modal" style="max-width:580px">
                 <div class="modal-header">
-                    <h3>Add Flight — Day <?php echo e($day->day_number); ?></h3>
+                    <h3><?php echo e(__('flights.modal.add_title', ['number' => $day->day_number])); ?></h3>
                     <button class="modal-close" onclick="closeModal('flight-add-modal-<?php echo e($day->id); ?>')">×</button>
                 </div>
                 <div class="modal-body">
@@ -533,8 +534,8 @@
                         <?php echo csrf_field(); ?>
                         <?php echo $__env->make('trips._flight_form', ['f' => null], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
                         <div class="flex gap-1">
-                            <button type="button" onclick="closeModal('flight-add-modal-<?php echo e($day->id); ?>')" class="btn btn-outline">Cancel</button>
-                            <button type="submit" class="btn btn-primary">Add Flight</button>
+                            <button type="button" onclick="closeModal('flight-add-modal-<?php echo e($day->id); ?>')" class="btn btn-outline"><?php echo e(__('general.btn.cancel')); ?></button>
+                            <button type="submit" class="btn btn-primary"><?php echo e(__('flights.btn.add_flight')); ?></button>
                         </div>
                     </form>
                 </div>
@@ -551,11 +552,11 @@
     ?>
     <?php if($totalKm > 0): ?>
         <div style="margin-top:0.5rem;padding:0.875rem 1.25rem;background:white;border-radius:12px;box-shadow:var(--shadow);display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap">
-            <span style="font-size:0.85rem;color:var(--muted);font-weight:500">Trip totals</span>
-            <span class="badge badge-blue" style="font-size:0.85rem;padding:0.3rem 0.75rem">📏 <?php echo e(number_format($totalKm, 1)); ?> km total</span>
+            <span style="font-size:0.85rem;color:var(--muted);font-weight:500"><?php echo e(__('trips.show.trip_totals')); ?></span>
+            <span class="badge badge-blue" style="font-size:0.85rem;padding:0.3rem 0.75rem">📏 <?php echo e(__('trips.show.km_total', ['km' => number_format($totalKm, 1)])); ?></span>
             <?php if($totalMin > 0): ?>
                 <?php $th = intdiv($totalMin, 60); $tm = $totalMin % 60; ?>
-                <span class="badge badge-gold" style="font-size:0.85rem;padding:0.3rem 0.75rem">⏱ <?php echo e($th > 0 ? $th.'h '.$tm.'min' : $tm.'min'); ?> driving</span>
+                <span class="badge badge-gold" style="font-size:0.85rem;padding:0.3rem 0.75rem">⏱ <?php echo e(__('trips.show.driving', ['time' => $th > 0 ? $th.'h '.$tm.'min' : $tm.'min'])); ?></span>
             <?php endif; ?>
         </div>
     <?php endif; ?>
@@ -616,7 +617,7 @@ function addStop(dayId, prefill = null) {
     row.innerHTML = `
         <div style="display:flex;align-items:center;gap:0.5rem">
             <span class="stop-num" style="width:22px;height:22px;border-radius:50%;background:var(--ink);color:white;display:flex;align-items:center;justify-content:center;font-size:0.7rem;flex-shrink:0;font-weight:600">●</span>
-            <input type="text" class="form-control stop-city-input" placeholder="City (e.g. Paris)" style="flex:1;padding:0.4rem 0.6rem"
+            <input type="text" class="form-control stop-city-input" placeholder="<?php echo e(__('routes.stop_placeholder')); ?>" style="flex:1;padding:0.4rem 0.6rem"
                    value="${prefill?.city || ''}" onblur="geocodeStop(${dayId}, this)">
             <input type="hidden" class="stop-lat" name="stops[${idx}][latitude]" value="${prefill?.latitude || ''}">
             <input type="hidden" class="stop-lng" name="stops[${idx}][longitude]" value="${prefill?.longitude || ''}">
@@ -632,7 +633,7 @@ function addStop(dayId, prefill = null) {
 
 function removeStop(btn, dayId) {
     const list = document.getElementById(`stops-list-${dayId}`);
-    if (list.querySelectorAll('.stop-row').length <= 2) { alert('You need at least 2 stops.'); return; }
+    if (list.querySelectorAll('.stop-row').length <= 2) { alert('<?php echo e(__('routes.alert_min_stops')); ?>'); return; }
     btn.closest('.stop-row').remove();
     updateStopNumbers(dayId);
 }
@@ -728,10 +729,10 @@ function updatePreviewMap(dayId) {
 
 async function calculateRoute(dayId) {
     const stops = getModalStops(dayId);
-    if (stops.length < 2) { alert('Please add and geocode at least 2 stops.'); return; }
+    if (stops.length < 2) { alert('<?php echo e(__('routes.alert_geocode_stops')); ?>'); return; }
     const mode = document.getElementById(`transport-input-${dayId}`).value;
     const summaryEl = document.getElementById(`route-calc-summary-${dayId}`);
-    summaryEl.textContent = 'Calculating…'; summaryEl.style.color = 'var(--muted)';
+    summaryEl.textContent = '<?php echo e(__('routes.calculating')); ?>'; summaryEl.style.color = 'var(--muted)';
     let distKm, durationMin;
 
     if (mode === 'car') {
@@ -766,7 +767,7 @@ async function calculateRoute(dayId) {
     durationMin = Math.round(durationMin);
     document.getElementById(`total-distance-${dayId}`).value = distKm;
     document.getElementById(`total-duration-${dayId}`).value = durationMin;
-    const modeLabel = { car: '🚗 Car', bus: '🚌 Bus', train: '🚂 Train' }[mode];
+    const modeLabel = { car: '🚗 <?php echo e(__('routes.mode.car')); ?>', bus: '🚌 <?php echo e(__('routes.mode.bus')); ?>', train: '🚂 <?php echo e(__('routes.mode.train')); ?>' }[mode];
     summaryEl.innerHTML = `<strong>${modeLabel}:</strong> ~${distKm} km · ${formatDuration(durationMin)}`;
     summaryEl.style.color = 'var(--accent)';
 }

@@ -23,11 +23,11 @@ class Activity extends Model
 
     public function typeLabel(): string {
         return match($this->type) {
-            'hotel' => 'Hotel / Accommodation',
-            'poi' => 'Point of Interest',
-            'reservation' => 'Reservation',
-            'comment' => 'Comment / Note',
-            default => 'Other',
+            'hotel' => __('trips.activity_type.hotel'),
+            'poi' => __('trips.activity_type.poi'),
+            'reservation' => __('trips.activity_type.reservation'),
+            'comment' => __('trips.activity_type.comment'),
+            default => __('trips.activity_type.poi'),
         };
     }
 }

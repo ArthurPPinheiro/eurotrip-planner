@@ -26,12 +26,12 @@ class Accommodation extends Model
     public static function types(): array
     {
         return [
-            'hotel'   => ['label' => 'Hotel', 'icon' => '🏨'],
-            'airbnb'  => ['label' => 'Airbnb', 'icon' => '🏠'],
-            'hostel'  => ['label' => 'Hostel', 'icon' => '🛏️'],
-            'resort'  => ['label' => 'Resort', 'icon' => '🏖️'],
-            'camping' => ['label' => 'Camping', 'icon' => '⛺'],
-            'other'   => ['label' => 'Other', 'icon' => '🏡'],
+            'hotel'   => ['label' => __('destinations.accom_type.hotel'), 'icon' => '🏨'],
+            'airbnb'  => ['label' => __('destinations.accom_type.airbnb'), 'icon' => '🏠'],
+            'hostel'  => ['label' => __('destinations.accom_type.hostel'), 'icon' => '🛏️'],
+            'resort'  => ['label' => __('destinations.accom_type.resort'), 'icon' => '🏖️'],
+            'camping' => ['label' => __('destinations.accom_type.camping'), 'icon' => '⛺'],
+            'other'   => ['label' => __('destinations.accom_type.other'), 'icon' => '🏡'],
         ];
     }
 }

@@ -21,7 +21,7 @@ class PointOfInterestController extends Controller
         $data['order'] = $destination->pointsOfInterest()->count();
         $destination->pointsOfInterest()->create($data);
 
-        return back()->with('success', 'Point of interest added!');
+        return back()->with('success', __('messages.poi.added'));
     }
 
     public function update(Request $request, PointOfInterest $pointOfInterest)
@@ -36,7 +36,7 @@ class PointOfInterestController extends Controller
         ]);
 
         $pointOfInterest->update($data);
-        return back()->with('success', 'Updated!');
+        return back()->with('success', __('messages.poi.updated'));
     }
 
     public function toggle(PointOfInterest $pointOfInterest)
@@ -48,6 +48,6 @@ class PointOfInterestController extends Controller
     public function destroy(PointOfInterest $pointOfInterest)
     {
         $pointOfInterest->delete();
-        return back()->with('success', 'Removed.');
+        return back()->with('success', __('messages.poi.removed'));
     }
 }

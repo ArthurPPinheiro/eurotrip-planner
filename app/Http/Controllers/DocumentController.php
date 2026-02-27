@@ -50,7 +50,7 @@ class DocumentController extends Controller
             "notes" => $request->notes,
         ]);
 
-        return back()->with("success", "Document uploaded!");
+        return back()->with("success", __("messages.document.uploaded"));
     }
 
     public function download(Document $document)
@@ -70,6 +70,6 @@ class DocumentController extends Controller
     {
         Storage::disk("r2")->delete($document->file_path);
         $document->delete();
-        return back()->with("success", "Document deleted.");
+        return back()->with("success", __("messages.document.deleted"));
     }
 }

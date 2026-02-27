@@ -28,7 +28,7 @@ class FlightController extends Controller
 
         $day->flights()->create($data);
 
-        return back()->with('success', 'Flight added.');
+        return back()->with('success', __('messages.flight.added'));
     }
 
     public function update(Flight $flight, Request $request)
@@ -51,13 +51,13 @@ class FlightController extends Controller
 
         $flight->update($data);
 
-        return back()->with('success', 'Flight updated.');
+        return back()->with('success', __('messages.flight.updated'));
     }
 
     public function destroy(Flight $flight)
     {
         $flight->delete();
 
-        return back()->with('success', 'Flight removed.');
+        return back()->with('success', __('messages.flight.removed'));
     }
 }

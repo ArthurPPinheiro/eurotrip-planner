@@ -19,11 +19,11 @@ class DestinationController extends Controller
             'emoji' => $request->emoji ?? '🌍',
             'order' => $order,
         ]);
-        return back()->with('success', 'City added!');
+        return back()->with('success', __('messages.city.added'));
     }
 
     public function destroy(Destination $destination) {
         $destination->delete();
-        return back()->with('success', 'Destination removed.');
+        return back()->with('success', __('messages.destination.removed'));
     }
 }

@@ -30,12 +30,12 @@ class Reservation extends Model
     public static function types(): array
     {
         return [
-            'restaurant' => ['label' => 'Restaurant', 'icon' => '🍽️'],
-            'transport'  => ['label' => 'Transport', 'icon' => '🚂'],
-            'flight'     => ['label' => 'Flight', 'icon' => '✈️'],
-            'activity'   => ['label' => 'Activity / Tour', 'icon' => '🎭'],
-            'show'       => ['label' => 'Show / Event', 'icon' => '🎪'],
-            'other'      => ['label' => 'Other', 'icon' => '📋'],
+            'restaurant' => ['label' => __('destinations.res_type.restaurant'), 'icon' => '🍽️'],
+            'transport'  => ['label' => __('destinations.res_type.transport'), 'icon' => '🚂'],
+            'flight'     => ['label' => __('destinations.res_type.flight'), 'icon' => '✈️'],
+            'activity'   => ['label' => __('destinations.res_type.activity'), 'icon' => '🎭'],
+            'show'       => ['label' => __('destinations.res_type.show'), 'icon' => '🎪'],
+            'other'      => ['label' => __('destinations.res_type.other'), 'icon' => '📋'],
         ];
     }
 }

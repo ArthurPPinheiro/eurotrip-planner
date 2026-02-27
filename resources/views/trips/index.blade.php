@@ -1,14 +1,14 @@
 @extends('layouts.app')
-@section('title', 'My Trips')
+@section('title', __('trips.index.title'))
 @section('content')
 <div class="flex-between mb-3">
     <div>
-        <h1 class="page-title">My Trips ✈</h1>
-        <p class="page-subtitle">Plan and explore Europe together</p>
+        <h1 class="page-title">{{ __('trips.index.title') }} ✈</h1>
+        <p class="page-subtitle">{{ __('trips.index.subtitle') }}</p>
     </div>
     <div class="flex gap-1">
-        <button onclick="openModal('joinModal')" class="btn btn-outline">Join Trip</button>
-        <a href="{{ route('trips.create') }}" class="btn btn-primary">+ New Trip</a>
+        <button onclick="openModal('joinModal')" class="btn btn-outline">{{ __('trips.index.join_trip') }}</button>
+        <a href="{{ route('trips.create') }}" class="btn btn-primary">{{ __('trips.index.new_trip') }}</a>
     </div>
 </div>
 
@@ -16,11 +16,11 @@
     <div class="card">
         <div class="empty-state">
             <span class="emoji">🗺️</span>
-            <h3 style="font-family:'Playfair Display',serif;font-size:1.5rem;margin-bottom:0.5rem">No trips yet</h3>
-            <p class="text-muted">Create your first trip or join one with an invite code</p>
+            <h3 style="font-family:'Playfair Display',serif;font-size:1.5rem;margin-bottom:0.5rem">{{ __('trips.index.no_trips') }}</h3>
+            <p class="text-muted">{{ __('trips.index.no_trips_hint') }}</p>
             <div class="flex-center gap-1 mt-2" style="justify-content:center">
-                <a href="{{ route('trips.create') }}" class="btn btn-primary">Create Trip</a>
-                <button onclick="openModal('joinModal')" class="btn btn-outline">Join Trip</button>
+                <a href="{{ route('trips.create') }}" class="btn btn-primary">{{ __('trips.index.create_trip') }}</a>
+                <button onclick="openModal('joinModal')" class="btn btn-outline">{{ __('trips.index.join_trip') }}</button>
             </div>
         </div>
     </div>
@@ -35,10 +35,10 @@
                     <h3 style="font-family:'Playfair Display',serif;font-size:1.25rem;color:white;margin-bottom:0.25rem">{{ $trip->name }}</h3>
                     @if($trip->start_date)
                         <p style="color:var(--gold-light);font-size:0.8rem">
-                            {{ $trip->start_date->format('M d') }} — {{ $trip->end_date?->format('M d, Y') ?? '?' }}
+                            {{ $trip->start_date->translatedFormat('M d') }} — {{ $trip->end_date?->translatedFormat('M d, Y') ?? '?' }}
                         </p>
                         <p style="color:var(--cream);font-size:0.8rem">
-                            @if($isPast) 🏁 Trip completed @else ⏰ In {{ $trip->getTimeUntilTrip() }} Days @endif
+                            @if($isPast) 🏁 {{ __('trips.index.trip_completed') }} @else ⏰ {{ __('trips.index.in_days', ['count' => $trip->getTimeUntilTrip()]) }} @endif
                         </p>
                     @endif
                 </div>
@@ -53,7 +53,7 @@
                             @endforeach
                         </div>
                         <span class="badge {{ $trip->created_by === auth()->id() ? 'badge-gold' : 'badge-blue' }}">
-                            {{ $trip->created_by === auth()->id() ? 'Owner' : 'Member' }}
+                            {{ $trip->created_by === auth()->id() ? __('general.label.owner') : __('general.label.member') }}
                         </span>
                     </div>
                 </div>
@@ -66,18 +66,18 @@
 <div id="joinModal" class="modal-backdrop">
     <div class="modal">
         <div class="modal-header">
-            <h3>Join a Trip</h3>
+            <h3>{{ __('trips.join.title') }}</h3>
             <button class="modal-close" onclick="closeModal('joinModal')">×</button>
         </div>
         <div class="modal-body">
             <form method="POST" action="{{ route('trips.join') }}">
                 @csrf
                 <div class="form-group">
-                    <label class="form-label">Invite Code</label>
-                    <input type="text" name="invite_code" class="form-control" placeholder="e.g. ABCD1234" style="text-transform:uppercase;letter-spacing:0.1em;font-size:1.1rem" required>
-                    <p class="text-sm text-muted mt-1">Ask your trip organizer for the 8-character invite code.</p>
+                    <label class="form-label">{{ __('trips.join.invite_code') }}</label>
+                    <input type="text" name="invite_code" class="form-control" placeholder="{{ __('trips.join.placeholder') }}" style="text-transform:uppercase;letter-spacing:0.1em;font-size:1.1rem" required>
+                    <p class="text-sm text-muted mt-1">{{ __('trips.join.hint') }}</p>
                 </div>
-                <button type="submit" class="btn btn-primary">Join Trip</button>
+                <button type="submit" class="btn btn-primary">{{ __('trips.index.join_trip') }}</button>
             </form>
         </div>
     </div>

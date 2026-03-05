@@ -26,7 +26,15 @@ class FlightController extends Controller
             'notes'              => 'nullable|string|max:1000',
         ]);
 
-        $day->flights()->create($data);
+        $flight = $day->flights()->create($data);
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'html'       => view('trips._flight_card', ['flight' => $flight])->render(),
+                'modal_html' => view('trips._flight_edit_modal', ['flight' => $flight, 'day' => $day])->render(),
+                'message'    => __('messages.flight.added'),
+            ]);
+        }
 
         return back()->with('success', __('messages.flight.added'));
     }
@@ -50,6 +58,14 @@ class FlightController extends Controller
         ]);
 
         $flight->update($data);
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'html'    => view('trips._flight_card', ['flight' => $flight])->render(),
+                'flight'  => $flight->toArray(),
+                'message' => __('messages.flight.updated'),
+            ]);
+        }
 
         return back()->with('success', __('messages.flight.updated'));
     }

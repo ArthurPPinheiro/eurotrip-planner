@@ -117,7 +117,7 @@ class TripController extends Controller
             ->with("success", __("messages.trip.joined"));
     }
 
-    public function addDay(Trip $trip)
+    public function addDay(Request $request, Trip $trip)
     {
         $this->authorize("view", $trip);
         $lastDay = $trip->days()->max("day_number") ?? 0;
@@ -125,11 +125,22 @@ class TripController extends Controller
         $newDate = $lastDate
             ? \Carbon\Carbon::parse($lastDate)->addDay()
             : now();
-        Day::create([
+        $day = Day::create([
             "trip_id" => $trip->id,
             "date" => $newDate->toDateString(),
             "day_number" => $lastDay + 1,
         ]);
+
+        if ($request->wantsJson()) {
+            $day->setRelation('flights', collect([]));
+            $day->setRelation('destinations', collect([]));
+            $day->setRelation('route', null);
+            return response()->json([
+                'html'    => view('trips._day_accordion', ['day' => $day, 'open' => true])->render(),
+                'message' => __("messages.day.added"),
+            ]);
+        }
+
         return back()->with("success", __("messages.day.added"));
     }
 }

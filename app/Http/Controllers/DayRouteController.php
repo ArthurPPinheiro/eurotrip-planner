@@ -40,6 +40,23 @@ class DayRouteController extends Controller
             ]);
         }
 
+        if ($request->wantsJson()) {
+            $route->load('stops');
+            $day->setRelation('route', $route);
+            $stops = $route->stops->map(fn($s) => [
+                'city'      => $s->city,
+                'latitude'  => (float) $s->latitude,
+                'longitude' => (float) $s->longitude,
+            ])->values()->toArray();
+            return response()->json([
+                'html'       => view('trips._route_section', ['day' => $day])->render(),
+                'update_url' => route('routes.update', $route),
+                'stops'      => $stops,
+                'mode'       => $route->transport_mode,
+                'message'    => __('messages.route.added'),
+            ]);
+        }
+
         return back()->with('success', __('messages.route.added'));
     }
 
@@ -72,6 +89,24 @@ class DayRouteController extends Controller
                 'latitude'     => $stop['latitude'],
                 'longitude'    => $stop['longitude'],
                 'order'        => $index,
+            ]);
+        }
+
+        if ($request->wantsJson()) {
+            $route->load('stops');
+            $day = $route->day;
+            $day->setRelation('route', $route);
+            $stops = $route->stops->map(fn($s) => [
+                'city'      => $s->city,
+                'latitude'  => (float) $s->latitude,
+                'longitude' => (float) $s->longitude,
+            ])->values()->toArray();
+            return response()->json([
+                'html'       => view('trips._route_section', ['day' => $day])->render(),
+                'update_url' => route('routes.update', $route),
+                'stops'      => $stops,
+                'mode'       => $route->transport_mode,
+                'message'    => __('messages.route.updated'),
             ]);
         }
 

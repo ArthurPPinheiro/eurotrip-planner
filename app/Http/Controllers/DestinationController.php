@@ -19,6 +19,15 @@ class DestinationController extends Controller
             'emoji' => $request->emoji ?? '🌍',
             'order' => $order,
         ]);
+
+        if ($request->wantsJson()) {
+            $dest->setRelation('activities', collect([]));
+            return response()->json([
+                'html' => view('trips._destination_card', ['dest' => $dest])->render(),
+                'message' => __('messages.city.added'),
+            ]);
+        }
+
         return back()->with('success', __('messages.city.added'));
     }
 

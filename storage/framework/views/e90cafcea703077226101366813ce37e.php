@@ -132,6 +132,13 @@
         <?php echo $__env->yieldContent('content'); ?>
     </main>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        #toast-container { position:fixed; bottom:1.5rem; right:1.5rem; z-index:9999; display:flex; flex-direction:column; gap:0.5rem; pointer-events:none; }
+        .ajax-toast { padding:0.75rem 1.25rem; border-radius:10px; font-size:0.875rem; font-family:'DM Sans',sans-serif; box-shadow:0 4px 20px rgba(0,0,0,0.2); opacity:0; transform:translateY(8px); transition:opacity 0.25s, transform 0.25s; pointer-events:none; max-width:320px; }
+        .ajax-toast.show { opacity:1; transform:translateY(0); }
+        .ajax-toast-success { background:#065f46; color:white; }
+        .ajax-toast-error { background:#991b1b; color:white; }
+    </style>
     <script>
         function openModal(id) { document.getElementById(id).classList.add('open'); }
         function closeModal(id) { document.getElementById(id).classList.remove('open'); }
@@ -143,6 +150,107 @@
             if (msg && !confirm(msg)) {
                 e.preventDefault();
                 e.stopPropagation();
+            }
+        });
+
+        function showToast(message, type = 'success') {
+            let container = document.getElementById('toast-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'toast-container';
+                document.body.appendChild(container);
+            }
+            const toast = document.createElement('div');
+            toast.className = `ajax-toast ajax-toast-${type}`;
+            toast.textContent = message;
+            container.appendChild(toast);
+            requestAnimationFrame(() => toast.classList.add('show'));
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        document.addEventListener('submit', async function(e) {
+            const form = e.target;
+            if (!form.hasAttribute('data-ajax')) return;
+            e.preventDefault();
+            e.stopImmediatePropagation();
+
+            if (form._ajaxSubmitting) return;
+            form._ajaxSubmitting = true;
+
+            const submitBtn = form.querySelector('[type=submit]');
+            const origText = submitBtn?.textContent;
+            if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = '...'; }
+
+            form.querySelectorAll('.ajax-field-error').forEach(el => el.remove());
+            form.querySelectorAll('.form-control').forEach(el => el.style.borderColor = '');
+
+            try {
+                const res = await fetch(form.action, {
+                    method: 'POST',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
+                    body: new FormData(form)
+                });
+                const json = await res.json();
+
+                if (res.ok) {
+                    // Inject HTML into target
+                    if (form.dataset.ajaxTarget && json.html) {
+                        const target = document.querySelector(form.dataset.ajaxTarget);
+                        if (target) {
+                            const pos = form.dataset.ajaxInsert || 'beforeend';
+                            if (pos === 'replace') target.outerHTML = json.html;
+                            else target.insertAdjacentHTML(pos, json.html);
+                        }
+                    }
+                    // Hide placeholder
+                    if (form.dataset.ajaxHide) {
+                        document.querySelectorAll(form.dataset.ajaxHide).forEach(el => el.style.display = 'none');
+                    }
+                    // Show container
+                    if (form.dataset.ajaxShow) {
+                        const showEl = document.querySelector(form.dataset.ajaxShow);
+                        if (showEl) showEl.style.display = form.dataset.ajaxShowDisplay || '';
+                    }
+                    // Custom handler
+                    if (form.dataset.ajaxHandler) {
+                        const handler = window[form.dataset.ajaxHandler];
+                        if (handler) handler(json, form);
+                    }
+                    // Close modal unless keep-open
+                    if (!form.hasAttribute('data-ajax-keep-open')) {
+                        const modal = form.closest('.modal-backdrop');
+                        if (modal) modal.classList.remove('open');
+                    }
+                    // Clear fields unless no-clear
+                    if (!form.hasAttribute('data-ajax-no-clear')) {
+                        form.querySelectorAll('input:not([type=hidden]):not([name=_token])').forEach(el => el.value = '');
+                        form.querySelectorAll('textarea').forEach(el => el.value = '');
+                        form.querySelectorAll('select').forEach(el => el.selectedIndex = 0);
+                    }
+                    showToast(json.message || '✓ Saved');
+                } else {
+                    if (json.errors) {
+                        Object.entries(json.errors).forEach(([field, messages]) => {
+                            const input = form.querySelector(`[name="${field}"]`);
+                            if (input) {
+                                input.style.borderColor = 'var(--danger)';
+                                const err = document.createElement('div');
+                                err.className = 'form-error ajax-field-error';
+                                err.textContent = messages[0];
+                                input.parentNode.insertBefore(err, input.nextSibling);
+                            }
+                        });
+                    }
+                    showToast(json.message || 'Please check the form.', 'error');
+                }
+            } catch (err) {
+                showToast('Connection error. Please try again.', 'error');
+            } finally {
+                form._ajaxSubmitting = false;
+                if (submitBtn) { submitBtn.disabled = false; if (origText) submitBtn.textContent = origText; }
             }
         });
     </script>

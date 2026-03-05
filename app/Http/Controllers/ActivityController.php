@@ -22,13 +22,23 @@ class ActivityController extends Controller
         ]);
 
         $order = $destination->activities()->max('order') + 1;
-        Activity::create(array_merge($request->only('type', 'title', 'description', 'address', 'link', 'time', 'price', 'currency'), [
+        $activity = Activity::create(array_merge($request->only('type', 'title', 'description', 'address', 'link', 'time', 'price', 'currency'), [
             'destination_id' => $destination->id,
             'added_by' => Auth::id(),
             'order' => $order,
         ]));
 
-        return back()->with('success', __('messages.activity.added', ['type' => __('trips.activity_type.' . $request->type)]));
+        $message = __('messages.activity.added', ['type' => __('trips.activity_type.' . $request->type)]);
+
+        if ($request->wantsJson()) {
+            $activity->load('author');
+            return response()->json([
+                'html' => view('trips._activity_item', ['act' => $activity])->render(),
+                'message' => $message,
+            ]);
+        }
+
+        return back()->with('success', $message);
     }
 
     public function destroy(Activity $activity) {

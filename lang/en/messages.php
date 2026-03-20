@@ -35,6 +35,8 @@ return [
     'document' => [
         'uploaded' => 'Document uploaded!',
         'deleted' => 'Document deleted.',
+        'quota_exceeded' => 'Storage limit reached for this trip (50 MB total). Delete some documents first.',
+        'limit_reached' => 'Document limit reached for this trip (20 files max).',
     ],
     'accommodation' => [
         'added' => 'Accommodation added!',

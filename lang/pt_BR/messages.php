@@ -35,6 +35,8 @@ return [
     'document' => [
         'uploaded' => 'Documento enviado!',
         'deleted' => 'Documento excluído.',
+        'quota_exceeded' => 'Limite de armazenamento atingido para esta viagem (50 MB no total). Exclua alguns documentos primeiro.',
+        'limit_reached' => 'Limite de documentos atingido para esta viagem (máx 20 arquivos).',
     ],
     'accommodation' => [
         'added' => 'Hospedagem adicionada!',

@@ -95,7 +95,10 @@
                 </div>
                 <div class="form-group">
                     <label class="form-label">{{ __('documents.file_label') }}</label>
-                    <input type="file" name="file" class="form-control" required>
+                    <input type="file" name="file" id="fileInput" class="form-control" required
+                           accept=".pdf,.jpg,.jpeg,.png,.webp">
+                    <p class="text-sm text-muted mt-1">{{ __('documents.file_hint') }}</p>
+                    <p id="fileSizeError" class="text-sm mt-1" style="color:var(--danger);display:none"></p>
                 </div>
                 <div class="form-group">
                     <label class="form-label">{{ __('documents.expiry_date') }}</label>
@@ -113,4 +116,37 @@
         </div>
     </div>
 </div>
+@push('scripts')
+<script>
+(function () {
+    const MAX_BYTES = {{ \App\Http\Controllers\DocumentController::MAX_FILE_SIZE_KB * 1024 }};
+    const input = document.getElementById('fileInput');
+    const error = document.getElementById('fileSizeError');
+    const form = input ? input.closest('form') : null;
+
+    if (!input || !form) return;
+
+    input.addEventListener('change', function () {
+        const file = this.files[0];
+        if (!file) return;
+        if (file.size > MAX_BYTES) {
+            error.textContent = '{{ __("documents.file_too_large") }}';
+            error.style.display = 'block';
+            this.value = '';
+        } else {
+            error.style.display = 'none';
+        }
+    });
+
+    form.addEventListener('submit', function (e) {
+        const file = input.files[0];
+        if (file && file.size > MAX_BYTES) {
+            e.preventDefault();
+            error.textContent = '{{ __("documents.file_too_large") }}';
+            error.style.display = 'block';
+        }
+    });
+})();
+</script>
+@endpush
 @endsection

@@ -23,16 +23,29 @@ class DocumentController extends Controller
         return view("documents.index", compact("trip", "documents", "grouped"));
     }
 
+    const MAX_FILE_SIZE_KB = 5120;       // 5 MB per file
+    const MAX_TRIP_STORAGE_KB = 51200;   // 50 MB total per trip
+    const MAX_TRIP_FILES = 20;           // max documents per trip
+
     public function store(Request $request, Trip $trip)
     {
         $this->authorize("view", $trip);
         $request->validate([
             "type" => "required|in:passport,visa,insurance,ticket,other",
             "title" => "required|string|max:255",
-            "file" => "required|file|max:10240",
+            "file" => "required|file|mimes:pdf,jpeg,jpg,png,webp|max:" . self::MAX_FILE_SIZE_KB,
             "expires_at" => "nullable|date",
-            "notes" => "nullable|string",
+            "notes" => "nullable|string|max:1000",
         ]);
+
+        $totalUsed = $trip->documents()->sum("size");
+        if ($totalUsed + ($request->file("file")->getSize()) > self::MAX_TRIP_STORAGE_KB * 1024) {
+            return back()->withErrors(["file" => __("messages.document.quota_exceeded")])->withInput();
+        }
+
+        if ($trip->documents()->count() >= self::MAX_TRIP_FILES) {
+            return back()->withErrors(["file" => __("messages.document.limit_reached")])->withInput();
+        }
 
         $file = $request->file("file");
         $path = $file->store("trips/{$trip->id}/documents", "r2");
